@@ -27,6 +27,9 @@ let currentPageItems = []; // productos exactos mostrados en la página actual (
 let bulkBusy = false;
 let selectedIds = new Set(); // selección manual de checkboxes, siempre acotada a la página actual
 let reviewFilter = 'pending';
+let me = { user: null, role: null }; // cuenta con sesión abierta
+// Teléfono y tablet: tarjetas por producto en lugar de la tabla de escritorio (que necesita ~860 px).
+const mobileMq = window.matchMedia('(max-width: 900px)');
 let reviewsCache = [];
 let reviewProdsCache = [];
 
@@ -58,38 +61,71 @@ function toast(msg) {
 }
 
 async function api(path, { method = 'GET', body, headers = {} } = {}) {
-  const opts = { method, headers: { 'X-Requested-With': 'fetch', ...headers }, credentials: 'same-origin' };
+  const opts = { method, headers: { 'X-Requested-With': 'fetch', ...headers }, credentials: 'same-origin', cache: 'no-store' };
   if (body instanceof Blob) opts.body = body;
   else if (body !== undefined) { opts.body = JSON.stringify(body); opts.headers['Content-Type'] = 'application/json'; }
   const r = await fetch('/api/admin' + path, opts);
   const data = await r.json().catch(() => ({}));
-  if (r.status === 401 && path !== '/login') showLogin();
+  if (r.status === 401 && path !== '/login') { sessionEnded('Tu sesión terminó. Vuelve a iniciar sesión.'); throw new Error('Sesión terminada'); }
   if (!r.ok) throw new Error(data.error || 'Error inesperado');
   return data;
 }
-const run = async (fn) => { try { await fn(); } catch (e) { toast(e.message); } };
+const run = async (fn) => { try { await fn(); } catch (e) { if (e.message !== 'Sesión terminada') toast(e.message); } };
 
 // ───────────── sesión ─────────────
-function showLogin() { $('#app').hidden = true; $('#login').hidden = false; }
-async function showApp() { $('#login').hidden = true; $('#app').hidden = false; await render(); refreshReviewBadge(); }
+const ROLE_LABEL = { admin: 'Administrador', staff: 'Empleado' };
+// Borra de la página todo dato administrativo (productos, pedidos, reseñas, usuarios) y muestra el acceso.
+function clearAdminState() {
+  products = []; pendingEdits = {}; rowStatus = {}; rowError = {}; selectedIds = new Set();
+  reviewsCache = []; reviewProdsCache = []; me = { user: null, role: null };
+  $('#view').innerHTML = '';
+  document.querySelectorAll('dialog[open]').forEach((d) => d.close());
+  document.querySelectorAll('dialog').forEach((d) => { d.innerHTML = ''; });
+}
+function showLogin(msg = '') {
+  clearAdminState();
+  $('#app').hidden = true; $('#login').hidden = false;
+  $('#loginErr').textContent = msg;
+  document.title = 'Administración | BodyFactory Gym';
+}
+function sessionEnded(msg) { if (!$('#app').hidden) showLogin(msg); }
+async function showApp(session) {
+  me = { user: session.user, role: session.role };
+  $('#whoami').textContent = `${me.user} · ${ROLE_LABEL[me.role] || me.role}`;
+  $('#login').hidden = true; $('#app').hidden = false;
+  await render(); refreshReviewBadge();
+}
+async function logout() {
+  const btn = $('#logoutBtn'); btn.disabled = true;
+  try { await fetch('/api/admin/logout', { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, credentials: 'same-origin', cache: 'no-store' }); } catch { /* sin red: igual se limpia la página */ }
+  btn.disabled = false;
+  showLogin();
+  toast('Sesión cerrada');
+}
 
 $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const f = new FormData(e.target);
+  const form = e.target;
+  const f = new FormData(form);
+  const btn = form.querySelector('button[type=submit]');
   $('#loginErr').textContent = '';
+  if (!String(f.get('username')).trim() || !String(f.get('password'))) { $('#loginErr').textContent = 'Escribe tu usuario y contraseña'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando…';
   try {
-    await api('/login', { method: 'POST', body: { username: f.get('username'), password: f.get('password') } });
-    e.target.reset();
-    await showApp();
-  } catch (err) { $('#loginErr').textContent = err.message; }
+    const session = await api('/login', { method: 'POST', body: { username: f.get('username'), password: f.get('password') } });
+    form.reset();
+    await showApp(session);
+  } catch (err) { $('#loginErr').textContent = err.message; } finally { btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
 });
+$('#logoutBtn').addEventListener('click', logout);
 
 $('#tabs').addEventListener('click', (e) => {
   const b = e.target.closest('[data-tab]');
-  if (!b) return;
+  if (!b || b.dataset.tab === tab) return;
   tab = b.dataset.tab;
-  document.querySelectorAll('#tabs .chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
-  render();
+  document.querySelectorAll('#tabs [data-tab]').forEach((c) => { if (c === b) c.setAttribute('aria-current', 'page'); else c.removeAttribute('aria-current'); });
+  window.scrollTo({ top: 0 });
+  run(render);
 });
 
 async function render() {
@@ -97,7 +133,7 @@ async function render() {
   if (tab === 'products') await renderProducts(view);
   else if (tab === 'orders') await renderOrders(view);
   else if (tab === 'reviews') await renderReviews(view);
-  else renderAccount(view);
+  else await renderAccount(view);
 }
 
 // ───────────── productos ─────────────
@@ -168,12 +204,13 @@ function paintProducts(view) {
     : `Mostrando ${start + 1}–${Math.min(start + prodPageSize, total)} de ${total} productos`;
   const n = pageItems.length;
 
+  const mobile = mobileMq.matches;
   view.innerHTML = h`
-    <div class="bar"><div><h2>Productos</h2><span class="muted">Edita precio y stock en la tabla y pulsa Guardar.</span></div>
+    <div class="bar view-head"><div><h2>Productos</h2><span class="muted hint">${mobile ? 'Toca un producto para editarlo.' : 'Edita precio y stock en la tabla y pulsa Guardar.'}</span></div>
       <button class="btn" type="button" data-act="new">+ Nuevo producto</button></div>
     <div class="prod-search">
       <label class="sr" for="prodSearch">Buscar productos</label>
-      <input class="field" type="search" id="prodSearch" placeholder="Buscar por nombre, marca, categoría o ID…" value="${prodQuery}" autocomplete="off">
+      <input class="field" type="search" id="prodSearch" placeholder="Buscar por nombre, marca, categoría o ID…" value="${prodQuery}" autocomplete="off" enterkeyhint="search">
       <button class="btn metal small" type="button" data-act="clear-search" ${prodQuery ? '' : 'hidden'}>Limpiar</button>
       <label class="page-size">Por página
         <select class="field" id="pageSize">
@@ -183,7 +220,7 @@ function paintProducts(view) {
         </select>
       </label>
     </div>
-    ${n > 0 ? h`<div class="bulk-actions">
+    ${n > 0 && !mobile ? h`<div class="bulk-actions">
       <div class="bulk-actions-title">Gestión de visibilidad</div>
       <label class="bulk-selectall"><input type="checkbox" id="selectAllBox" ${selectedItems.length === n ? raw('checked') : raw('')} aria-label="Seleccionar todos de esta página"> Seleccionar todos de esta página</label>
       <span class="muted bulk-selected-count">${selectedItems.length} seleccionado${selectedItems.length === 1 ? '' : 's'} de ${n} en esta página</span>
@@ -196,16 +233,28 @@ function paintProducts(view) {
       </div>
     </div>` : ''}
     <p class="muted" id="prodCount" aria-live="polite">${countText}</p>
-    ${total === 0 ? h`<p class="muted">No se encontraron productos con ese criterio.</p>` : h`
-    <div class="table-wrap"><table class="tbl">
+    ${total === 0 ? h`<p class="muted">No se encontraron productos con ese criterio.</p>` : mobile ? productCards(pageItems) : productTable(pageItems, selectedItems, n)}
+    ${raw(paginationHtmlAdmin(prodPage, totalPages))}
+  `.s;
+}
+
+// Miniatura de producto: siempre la versión de 400 px (nunca la de 800) con tamaño reservado (sin saltos).
+const thumb = (p, cls, size) => (p.image
+  ? h`<img class="${cls}" src="/${p.image}-400.webp?v=__IMG_V__" alt="" loading="lazy" decoding="async" width="${size}" height="${size}">`
+  : h`<span class="${cls} thumb-ph" aria-hidden="true">Sin foto</span>`);
+
+function productTable(pageItems, selectedItems, n) {
+  return h`<div class="table-wrap"><table class="tbl">
       <thead><tr><th><input type="checkbox" id="selectAllRows" ${selectedItems.length === n ? raw('checked') : raw('')} aria-label="Seleccionar todos los productos de esta página"></th><th></th><th>Producto</th><th>Precio normal</th><th>Mayorista</th><th>Stock</th><th>Visible</th><th></th></tr></thead>
-      <tbody>${pageItems.map((p) => {
+      <tbody>${pageItems.map(rowHtml)}</tbody></table></div>`;
+}
+function rowHtml(p) {
         const active = rowValue(p, 'active');
         const saving = rowStatus[p.id] === 'saving';
         const dirty = !!pendingEdits[p.id];
         return h`<tr data-id="${p.id}" class="${active ? '' : 'off'}${dirty ? ' dirty' : ''}">
         <td><input type="checkbox" class="rowSelect" data-id="${p.id}" ${selectedIds.has(p.id) ? raw('checked') : raw('')} aria-label="Seleccionar ${p.name}"></td>
-        <td>${p.image ? h`<img class="thumb" src="/${p.image}-400.webp?v=__IMG_V__" alt="" loading="lazy" width="48" height="48">` : ''}</td>
+        <td>${thumb(p, 'thumb', 48)}</td>
         <td><strong>${p.name}</strong><br><span class="muted">${[p.brand, p.category, p.presentation].filter((v) => String(v ?? '').trim()).join(' · ')}</span><br>${rowStatusHtml(p.id)}</td>
         <td><input class="field" type="number" step="0.01" min="0" data-f="price_retail" value="${rowValue(p, 'price_retail')}" aria-label="Precio normal" ${saving ? raw('disabled') : raw('')}></td>
         <td><input class="field" type="number" step="0.01" min="0" data-f="price_wholesale" value="${rowValue(p, 'price_wholesale')}" aria-label="Precio mayorista" ${saving ? raw('disabled') : raw('')}></td>
@@ -215,53 +264,116 @@ function paintProducts(view) {
           <button class="btn metal small" type="button" data-act="edit">Editar</button>
           <button class="btn danger small" type="button" data-act="del" aria-label="Eliminar ${p.name}">Eliminar</button></div></td>
       </tr>`;
-      })}</tbody></table></div>`}
-    ${raw(paginationHtmlAdmin(prodPage, totalPages))}
-  `.s;
 }
+
+// Móvil: una tarjeta por producto con los datos esenciales; la edición se hace en una hoja aparte.
+function productCards(pageItems) {
+  return h`<ul class="pcards">${pageItems.map(cardHtml)}</ul>`;
+}
+function cardHtml(p) {
+  return h`<li class="pcard${p.active ? '' : ' off'}" data-id="${p.id}">
+      <button type="button" class="pcard-open" data-act="edit" aria-label="Editar ${p.name}">
+        ${thumb(p, 'pcard-img', 88)}
+        <span class="pcard-main">
+          <strong class="pcard-name">${p.name}</strong>
+          <span class="pcard-sub">${[p.brand, p.category].filter((v) => String(v ?? '').trim()).join(' · ')}</span>
+          <span class="pcard-id">${p.id}</span>
+          <span class="pcard-flags"><span class="flag ${p.active ? 'on' : 'off'}">${p.active ? 'Visible' : 'Oculto'}</span>${rowStatusHtml(p.id)}</span>
+        </span>
+      </button>
+      <dl class="pcard-nums">
+        <div><dt>Normal</dt><dd>${usd(p.price_retail)}</dd></div>
+        <div><dt>Mayorista</dt><dd>${usd(p.price_wholesale)}</dd></div>
+        <div><dt>Stock</dt><dd class="${p.stock > 0 ? '' : 'zero'}">${p.stock}</dd></div>
+      </dl>
+      <div class="pcard-acts">
+        <button type="button" class="btn metal" data-act="stock">Stock</button>
+        <button type="button" class="btn" data-act="edit">Editar producto</button>
+      </div>
+    </li>`;
+}
+
+// Repinta solo la tarjeta/fila de un producto (sin reconstruir el listado). Si no está en la página
+// actual o dejó de coincidir con la búsqueda, se repinta el listado completo.
+function repaintOne(id) {
+  if (tab !== 'products') return;
+  const p = products.find((x) => x.id === id);
+  const el = document.querySelector(`#view [data-id="${CSS.escape(id)}"]:is(tr, .pcard)`);
+  if (!p || !el || !filteredProducts().includes(p)) { paintProducts($('#view')); return; }
+  const tpl = document.createElement(el.tagName === 'TR' ? 'tbody' : 'ul');
+  tpl.innerHTML = (el.tagName === 'TR' ? rowHtml(p) : cardHtml(p)).s;
+  el.replaceWith(tpl.firstElementChild);
+}
+
+const CLOSE_ICON = raw('<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
 
 function productForm(p) {
   const isNew = !p;
   p = p || { name: '', brand: '', category: '', presentation: '', flavors: [], price_retail: 0, price_wholesale: 0, stock: 0, servings: 0, serving_size: '', image: '', badges: [], tag: '', popularity: 50, macros: { items: [] }, benefits: [], usage: '', description: '', active: true };
   const m = p.macros || {};
-  const num = (name, label, v, step = 'any') => h`<label>${label}<input class="field" type="number" name="${name}" step="${step}" min="0" value="${v}" required></label>`;
+  const num = (name, label, v, step = 'any', mode = 'decimal') => h`<label>${label}<input class="field" type="number" name="${name}" step="${step}" min="0" value="${v}" inputmode="${mode}" required></label>`;
   // Macros opcionales: vacío = dato desconocido (no se muestra en la tienda). Solo escribir valores de la etiqueta.
-  const opt = (name, label, v) => h`<label>${label}<input class="field" type="number" name="${name}" step="any" min="0" value="${v ?? ''}" placeholder="—"></label>`;
-  return h`<form class="form" id="pform" data-id="${p.id || ''}">
-    <div class="bar" style="margin:0"><h2>${isNew ? 'Nuevo producto' : 'Editar producto'}</h2><button class="btn metal small" type="button" data-act="close">Cerrar</button></div>
-    <div class="cols">
-      <label>Nombre<input class="field" name="name" value="${p.name}" required maxlength="120"></label>
-      <label>Marca<input class="field" name="brand" value="${p.brand}" maxlength="80"></label>
-      <label>Categoría<input class="field" name="category" value="${p.category}" maxlength="60" list="cats" placeholder="Proteínas, Creatina…"></label>
-      <label>Presentación<input class="field" name="presentation" value="${p.presentation}" maxlength="80" placeholder="2 lb (908 g)"></label>
+  const opt = (name, label, v) => h`<label>${label}<input class="field" type="number" name="${name}" step="any" min="0" value="${v ?? ''}" placeholder="—" inputmode="decimal"></label>`;
+  return h`<form class="sheet-form" id="pform" data-id="${p.id || ''}" novalidate>
+    <header class="sheet-head">
+      <div class="sheet-head-title"><h2>${isNew ? 'Nuevo producto' : 'Editar producto'}</h2>${isNew ? '' : h`<span class="muted">${p.id}</span>`}</div>
+      <button class="icon-btn" type="button" data-act="close" aria-label="Cerrar">${CLOSE_ICON}</button>
+    </header>
+    <div class="sheet-scroll form">
+      <section class="fsec"><h3>Datos básicos</h3>
+        <label>Nombre<input class="field" name="name" value="${p.name}" required maxlength="120"></label>
+        <div class="cols">
+          <label>Marca<input class="field" name="brand" value="${p.brand}" maxlength="80"></label>
+          <label>Categoría<input class="field" name="category" value="${p.category}" maxlength="60" list="cats" placeholder="Proteínas, Creatina…"></label>
+          <label>Presentación<input class="field" name="presentation" value="${p.presentation}" maxlength="80" placeholder="2 lb (908 g)"></label>
+        </div>
+        <datalist id="cats">${[...new Set(products.map((x) => x.category).filter(Boolean))].map((c) => h`<option value="${c}">`)}</datalist>
+        <label>Sabores (separados por coma; vacío si no aplica)<input class="field" name="flavors" value="${p.flavors.join(', ')}"></label>
+      </section>
+      <section class="fsec"><h3>Precios y stock</h3>
+        <div class="cols">
+          ${num('price_retail', 'Precio normal (USD)', p.price_retail, '0.01')}
+          ${num('price_wholesale', 'Precio mayorista (USD)', p.price_wholesale, '0.01')}
+          ${num('stock', 'Stock (unidades)', p.stock, '1', 'numeric')}
+        </div>
+        <label class="check-row"><input type="checkbox" name="active" ${p.active ? raw('checked') : raw('')}> Visible en la tienda</label>
+      </section>
+      <section class="fsec"><h3>Porción y orden</h3>
+        <div class="cols">
+          ${num('servings', 'Porciones por envase (0 = no confirmado)', p.servings, '1', 'numeric')}
+          <label>Tamaño de porción<input class="field" name="serving_size" value="${p.serving_size}" maxlength="60" placeholder="1 scoop (30 g)"></label>
+          ${num('popularity', 'Popularidad (0-1000, para ordenar)', p.popularity, '1', 'numeric')}
+          <label>Etiqueta<select class="field" name="tag"><option value="" ${p.tag === '' ? raw('selected') : raw('')}>Ninguna</option><option value="best" ${p.tag === 'best' ? raw('selected') : raw('')}>Más vendido</option><option value="new" ${p.tag === 'new' ? raw('selected') : raw('')}>Nuevo</option></select></label>
+        </div>
+        <fieldset><legend>Distintivos</legend><div class="checks">${Object.entries(BADGES).map(([k, v]) => h`<label><input type="checkbox" name="badge" value="${k}" ${p.badges.includes(k) ? raw('checked') : raw('')}>${v}</label>`)}</div></fieldset>
+      </section>
+      <section class="fsec"><h3>Ficha técnica</h3>
+        <fieldset><legend>Macros por porción (deja vacío lo que no esté confirmado en la etiqueta)</legend><div class="cols">
+          ${opt('calories', 'Calorías', m.calories)}${opt('protein', 'Proteína (g)', m.protein)}${opt('carbs', 'Carbohidratos (g)', m.carbs)}
+          ${opt('sugar', 'Azúcares (g)', m.sugar)}${opt('fat', 'Grasa (g)', m.fat)}${opt('sodium', 'Sodio (mg)', m.sodium)}</div></fieldset>
+        <label>Ingredientes activos por porción (uno por línea, formato «ingrediente|cantidad», p. ej. «Cafeína|300 mg»)<textarea class="field" name="items">${(m.items || []).map((x) => `${x.name}|${x.amount}`).join('\n')}</textarea></label>
+        <label>Beneficios (uno por línea, formato «icono|texto». Íconos: ${ICONS})<textarea class="field" name="benefits">${p.benefits.map((b) => `${b.icon}|${b.text}`).join('\n')}</textarea></label>
+        <label>Modo de uso / dosis<textarea class="field" name="usage" maxlength="1000">${p.usage}</textarea></label>
+        <label>Advertencias del producto (una por línea; solo las de la etiqueta o el fabricante)<textarea class="field" name="warnings">${(p.warnings || []).join('\n')}</textarea></label>
+        <label>Descripción corta<textarea class="field" name="description" maxlength="600">${p.description}</textarea></label>
+      </section>
+      <section class="fsec"><h3>Imagen</h3>
+        <div class="imgrow">
+          ${p.image ? h`<img id="imgPrev" src="/${p.image}-400.webp?v=__IMG_V__" alt="Imagen actual" width="120" height="120">` : h`<img id="imgPrev" alt="" width="120" height="120" hidden>`}
+          <div><input type="file" id="imgFile" accept="image/jpeg,image/png,image/webp" ${isNew ? raw('disabled') : raw('')}><p class="muted fine">${isNew ? 'Guarda el producto primero y luego súbele la imagen.' : 'JPG, PNG o WebP (máx. 10 MB). Se convierte a WebP con fondo negro.'}</p></div>
+          <input type="hidden" name="image" value="${p.image}">
+        </div>
+      </section>
+      ${isNew ? '' : h`<section class="fsec danger-zone"><h3>Eliminar</h3><p class="muted fine">Quita el producto del catálogo y del panel. No se puede deshacer.</p>
+        <button class="btn danger" type="button" data-act="del-product">Eliminar producto</button></section>`}
     </div>
-    <datalist id="cats">${[...new Set(products.map((x) => x.category).filter(Boolean))].map((c) => h`<option value="${c}">`)}</datalist>
-    <label>Sabores (separados por coma; vacío si no aplica)<input class="field" name="flavors" value="${p.flavors.join(', ')}"></label>
-    <div class="cols">
-      ${num('price_retail', 'Precio normal (USD)', p.price_retail, '0.01')}
-      ${num('price_wholesale', 'Precio mayorista (USD)', p.price_wholesale, '0.01')}
-      ${num('stock', 'Stock (unidades)', p.stock, '1')}
-      ${num('servings', 'Porciones por envase (0 = no confirmado)', p.servings, '1')}
-      <label>Tamaño de porción<input class="field" name="serving_size" value="${p.serving_size}" maxlength="60" placeholder="1 scoop (30 g)"></label>
-      ${num('popularity', 'Popularidad (0-1000, para ordenar)', p.popularity, '1')}
-      <label>Etiqueta<select class="field" name="tag"><option value="" ${p.tag === '' ? raw('selected') : raw('')}>Ninguna</option><option value="best" ${p.tag === 'best' ? raw('selected') : raw('')}>Más vendido</option><option value="new" ${p.tag === 'new' ? raw('selected') : raw('')}>Nuevo</option></select></label>
-    </div>
-    <fieldset><legend>Distintivos</legend><div class="checks">${Object.entries(BADGES).map(([k, v]) => h`<label><input type="checkbox" name="badge" value="${k}" ${p.badges.includes(k) ? raw('checked') : raw('')}>${v}</label>`)}</div></fieldset>
-    <fieldset><legend>Macros por porción (deja vacío lo que no esté confirmado en la etiqueta)</legend><div class="cols">
-      ${opt('calories', 'Calorías', m.calories)}${opt('protein', 'Proteína (g)', m.protein)}${opt('carbs', 'Carbohidratos (g)', m.carbs)}
-      ${opt('sugar', 'Azúcares (g)', m.sugar)}${opt('fat', 'Grasa (g)', m.fat)}${opt('sodium', 'Sodio (mg)', m.sodium)}</div></fieldset>
-    <label>Ingredientes activos por porción (uno por línea, formato «ingrediente|cantidad», p. ej. «Cafeína|300 mg»)<textarea class="field" name="items">${(m.items || []).map((x) => `${x.name}|${x.amount}`).join('\n')}</textarea></label>
-    <label>Beneficios (uno por línea, formato «icono|texto». Íconos: ${ICONS})<textarea class="field" name="benefits">${p.benefits.map((b) => `${b.icon}|${b.text}`).join('\n')}</textarea></label>
-    <label>Modo de uso / dosis<textarea class="field" name="usage" maxlength="1000">${p.usage}</textarea></label>
-    <label>Advertencias del producto (una por línea; solo las de la etiqueta o el fabricante)<textarea class="field" name="warnings">${(p.warnings || []).join('\n')}</textarea></label>
-    <label>Descripción corta<input class="field" name="description" value="${p.description}" maxlength="600"></label>
-    <fieldset><legend>Imagen</legend><div class="imgrow">
-      ${p.image ? h`<img id="imgPrev" src="/${p.image}-400.webp?v=__IMG_V__" alt="Imagen actual">` : h`<img id="imgPrev" alt="" hidden>`}
-      <div><input type="file" id="imgFile" accept="image/jpeg,image/png,image/webp"><p class="muted" style="margin:6px 0 0;font-size:.8rem">JPG, PNG o WebP (máx. 10 MB). Se convierte y comprime automáticamente a WebP.</p></div>
-      <input type="hidden" name="image" value="${p.image}">
-    </div></fieldset>
-    <label class="checks" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="active" ${p.active ? raw('checked') : raw('')} style="width:20px;height:20px"> Visible en la tienda</label>
-    <button class="btn block" type="submit">Guardar producto</button>
+    <footer class="sheet-foot">
+      <p class="save-msg" id="saveMsg" role="status" aria-live="polite"></p>
+      <div class="sheet-foot-btns">
+        <button class="btn metal" type="button" data-act="close">Cancelar</button>
+        <button class="btn" type="submit" id="saveBtn">${isNew ? 'Crear producto' : 'Guardar cambios'}</button>
+      </div>
+    </footer>
   </form>`;
 }
 
@@ -291,20 +403,86 @@ function readForm(form) {
   };
 }
 
+// Estado del formulario abierto: se compara con el contenido inicial para avisar antes de descartar cambios.
+let formSnapshot = '';
+let formBusy = false;
+const formState = (form) => JSON.stringify([...new FormData(form).entries()]);
 function openForm(p) {
   const dlg = $('#formDlg');
   dlg.innerHTML = productForm(p).s;
+  formBusy = false;
   if (!dlg.open) dlg.showModal();
+  dlg.querySelector('.sheet-scroll').scrollTop = 0;
+  formSnapshot = formState($('#pform'));
 }
+function closeForm(force = false) {
+  const form = $('#pform');
+  if (!force && form && formState(form) !== formSnapshot && !confirm('Hay cambios sin guardar. ¿Descartarlos?')) return;
+  $('#formDlg').close();
+}
+
+// ── hoja rápida de stock (móvil y escritorio) ──
+let stockTarget = null;
+function openStock(p) {
+  stockTarget = p.id;
+  const dlg = $('#stockDlg');
+  dlg.innerHTML = h`<form class="sheet-form" id="stockForm" novalidate>
+    <header class="sheet-head"><div class="sheet-head-title"><h2>Stock</h2><span class="muted">${p.name}</span></div>
+      <button class="icon-btn" type="button" data-act="close" aria-label="Cerrar">${CLOSE_ICON}</button></header>
+    <div class="sheet-scroll">
+      <p class="muted">Unidades disponibles ahora: <strong>${p.stock}</strong></p>
+      <div class="stepper" role="group" aria-label="Nuevo stock">
+        <button type="button" class="icon-btn" data-step="-1" aria-label="Restar una unidad">−</button>
+        <input class="field" type="number" name="stock" min="0" max="100000" step="1" inputmode="numeric" value="${p.stock}" aria-label="Nuevo stock">
+        <button type="button" class="icon-btn" data-step="1" aria-label="Sumar una unidad">+</button>
+      </div>
+    </div>
+    <footer class="sheet-foot"><p class="save-msg" id="stockMsg" role="status" aria-live="polite"></p>
+      <div class="sheet-foot-btns"><button class="btn metal" type="button" data-act="close">Cancelar</button><button class="btn" type="submit">Guardar stock</button></div></footer>
+  </form>`.s;
+  dlg.showModal();
+}
+$('#stockDlg').addEventListener('click', (e) => {
+  if (e.target === $('#stockDlg') || e.target.closest('[data-act=close]')) { $('#stockDlg').close(); return; }
+  const step = e.target.closest('[data-step]');
+  if (step) { const i = $('#stockForm').elements.stock; i.value = Math.max(0, (Math.floor(Number(i.value)) || 0) + Number(step.dataset.step)); }
+});
+$('#stockDlg').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const form = e.target; const btn = form.querySelector('button[type=submit]'); const msg = $('#stockMsg');
+  if (btn.disabled) return;
+  const value = Number(form.elements.stock.value);
+  if (!Number.isInteger(value) || value < 0 || value > 100000) { msg.className = 'save-msg bad'; msg.textContent = 'Escribe un número entero de 0 o más.'; return; }
+  const p = products.find((x) => x.id === stockTarget);
+  if (!p) return;
+  btn.disabled = true; btn.textContent = 'Guardando…'; msg.className = 'save-msg'; msg.textContent = 'Guardando…';
+  run(async () => {
+    try {
+      const saved = await api(`/products/${p.id}`, { method: 'PUT', body: { ...p, stock: value } });
+      if (saved.stock !== value) throw new Error('El servidor confirmó un valor distinto; revisa e intenta de nuevo');
+      upsertLocal(saved);
+      rowStatus[p.id] = 'saved';
+      $('#stockDlg').close();
+      toast('✓ Stock actualizado');
+      repaintOne(p.id);
+      setTimeout(() => { if (rowStatus[p.id] === 'saved') { delete rowStatus[p.id]; repaintOne(p.id); } }, 2500);
+    } catch (err) {
+      msg.className = 'save-msg bad'; msg.textContent = `No se pudo guardar: ${err.message}`;
+      btn.disabled = false; btn.textContent = 'Reintentar';
+      if (err.message === 'Sesión terminada') throw err;
+    }
+  });
+});
 
 $('#view').addEventListener('click', (e) => run(async () => {
   const b = e.target.closest('[data-act]');
   if (!b) return;
-  const row = b.closest('tr');
+  const row = b.closest('tr[data-id], .pcard[data-id]');
   const p = row && products.find((x) => x.id === row.dataset.id);
   switch (b.dataset.act) {
     case 'new': openForm(null); break;
     case 'edit': openForm(p); break;
+    case 'stock': openStock(p); break;
     case 'save': {
       if (rowStatus[p.id] === 'saving') break; // evita doble envío por clics repetidos
       const edits = pendingEdits[p.id] || {};
@@ -403,34 +581,64 @@ $('#view').addEventListener('input', (e) => {
 });
 
 $('#formDlg').addEventListener('click', (e) => run(async () => {
-  if (e.target === $('#formDlg') || e.target.closest('[data-act=close]')) $('#formDlg').close();
+  if (e.target === $('#formDlg') || e.target.closest('[data-act=close]')) { closeForm(); return; }
+  if (e.target.closest('[data-act=del-product]')) {
+    const id = $('#pform').dataset.id;
+    const p = products.find((x) => x.id === id);
+    if (!p || !confirm(`¿Eliminar «${p.name}»? Esta acción no se puede deshacer.`)) return;
+    await api(`/products/${p.id}`, { method: 'DELETE' });
+    products = products.filter((x) => x.id !== p.id);
+    closeForm(true); toast('Producto eliminado'); paintProducts($('#view'));
+  }
 }));
+$('#formDlg').addEventListener('cancel', (e) => { e.preventDefault(); closeForm(); }); // tecla Escape
 $('#formDlg').addEventListener('change', (e) => run(async () => {
   if (e.target.id !== 'imgFile' || !e.target.files[0]) return;
   const file = e.target.files[0];
   const form = $('#pform');
-  let id = form.dataset.id;
-  if (!id) { // producto nuevo: la imagen se sube después de crearlo
-    toast('Guarda el producto primero y luego súbele la imagen (Editar).'); e.target.value = ''; return;
-  }
-  toast('Subiendo…');
-  const { image } = await api(`/products/${id}/image`, { method: 'POST', body: file, headers: { 'Content-Type': file.type } });
-  form.elements.image.value = image;
-  const prev = $('#imgPrev'); prev.src = `/${image}-400.webp`; prev.hidden = false;
-  toast('Imagen lista. Pulsa «Guardar producto».');
+  const id = form.dataset.id;
+  if (!id) { e.target.value = ''; return; }
+  const msg = $('#saveMsg');
+  msg.className = 'save-msg'; msg.textContent = 'Subiendo imagen…';
+  try {
+    const { image } = await api(`/products/${id}/image`, { method: 'POST', body: file, headers: { 'Content-Type': file.type } });
+    form.elements.image.value = image;
+    const prev = $('#imgPrev'); prev.src = `/${image}-400.webp`; prev.hidden = false;
+    msg.textContent = 'Imagen lista. Pulsa «Guardar cambios» para aplicarla.';
+  } catch (err) { msg.className = 'save-msg bad'; msg.textContent = `No se pudo subir la imagen: ${err.message}`; e.target.value = ''; }
 }));
 $('#formDlg').addEventListener('submit', (e) => {
   e.preventDefault();
+  if (formBusy) return; // evita doble envío
+  const form = e.target;
+  const btn = $('#saveBtn'); const msg = $('#saveMsg');
+  const invalid = [...form.querySelectorAll('input, select, textarea')].find((i) => !i.checkValidity());
+  if (invalid) { msg.className = 'save-msg bad'; msg.textContent = 'Revisa el campo marcado.'; invalid.focus(); invalid.reportValidity?.(); return; }
+  const id = form.dataset.id;
+  const label = btn.textContent;
+  formBusy = true; btn.disabled = true; btn.textContent = 'Guardando…'; msg.className = 'save-msg'; msg.textContent = 'Guardando…';
   run(async () => {
-    const id = e.target.dataset.id;
-    const body = readForm(e.target);
-    const saved = await api(id ? `/products/${id}` : '/products', { method: id ? 'PUT' : 'POST', body });
-    $('#formDlg').close(); toast('Producto guardado');
-    // Actualización puntual: solo se reemplaza el producto guardado (sin volver a pedir el listado).
-    upsertLocal(saved);
-    if (tab === 'products') paintProducts($('#view')); else await render();
+    try {
+      const saved = await api(id ? `/products/${id}` : '/products', { method: id ? 'PUT' : 'POST', body: readForm(form) });
+      // Actualización puntual: solo se reemplaza el producto guardado (sin volver a pedir el listado).
+      upsertLocal(saved);
+      delete pendingEdits[saved.id];
+      rowStatus[saved.id] = 'saved';
+      msg.className = 'save-msg ok'; msg.textContent = '✓ Cambios guardados';
+      closeForm(true);
+      toast(id ? '✓ Cambios guardados' : '✓ Producto creado');
+      if (id) repaintOne(saved.id); else if (tab === 'products') paintProducts($('#view'));
+      setTimeout(() => { if (rowStatus[saved.id] === 'saved') { delete rowStatus[saved.id]; repaintOne(saved.id); } }, 2500);
+    } catch (err) {
+      // El formulario conserva todo lo escrito para reintentar.
+      msg.className = 'save-msg bad'; msg.textContent = `No se pudo guardar: ${err.message}`;
+      btn.disabled = false; btn.textContent = 'Reintentar';
+      if (err.message === 'Sesión terminada') throw err;
+    } finally { formBusy = false; if (btn.textContent === 'Guardando…') btn.textContent = label; }
   });
 });
+
+mobileMq.addEventListener('change', () => { if (tab === 'products' && products.length && !$('#app').hidden) paintProducts($('#view')); });
 
 // ───────────── acciones masivas: mostrar/ocultar SOLO la página actual ─────────────
 // bulkPending guarda los IDs exactos capturados en el momento de abrir el diálogo (no el número de
@@ -584,11 +792,11 @@ async function refreshReviewBadge() {
   try {
     const pending = await api('/reviews?status=pending');
     const el = $('#revBadge');
-    if (el) el.textContent = pending.length ? ` [${pending.length} pendiente${pending.length === 1 ? '' : 's'}]` : '';
+    if (el) { el.textContent = pending.length ? String(pending.length) : ''; el.hidden = !pending.length; el.setAttribute('aria-label', `${pending.length} pendiente${pending.length === 1 ? '' : 's'}`); }
   } catch { /* no bloquea el resto del panel */ }
 }
 async function renderReviews(view) {
-  const [reviews, prods] = await Promise.all([api('/reviews'), api('/products')]);
+  const [reviews, prods] = await Promise.all([api('/reviews'), products.length ? products : api('/products')]);
   reviewsCache = reviews; reviewProdsCache = prods;
   paintReviews(view);
   refreshReviewBadge();
@@ -627,27 +835,147 @@ $('#view').addEventListener('submit', (e) => {
       toast('Reseña agregada'); await render();
     } else if (e.target.id === 'pwForm') {
       const f = Object.fromEntries(new FormData(e.target));
+      if (f.next.length < MIN_PW) throw new Error(`La nueva contraseña debe tener al menos ${MIN_PW} caracteres`);
       if (f.next !== f.again) throw new Error('Las contraseñas nuevas no coinciden');
       await api('/password', { method: 'POST', body: { current: f.current, next: f.next } });
-      e.target.reset(); toast('Contraseña actualizada');
+      e.target.reset(); toast('✓ Contraseña actualizada');
+    } else if (e.target.id === 'newUserForm') {
+      const form = e.target; const f = Object.fromEntries(new FormData(form)); const btn = form.querySelector('button[type=submit]');
+      if (f.password.length < MIN_PW) throw new Error(`La contraseña debe tener al menos ${MIN_PW} caracteres`);
+      if (f.password !== f.again) throw new Error('Las contraseñas no coinciden');
+      btn.disabled = true;
+      try {
+        const u = await api('/users', { method: 'POST', body: { username: f.username, password: f.password, role: f.role } });
+        form.reset(); toast(`✓ Usuario ${u.username} creado`); await renderAccount($('#view'));
+      } finally { btn.disabled = false; }
     }
   });
 });
 
-// ───────────── cuenta ─────────────
-function renderAccount(view) {
-  view.innerHTML = h`<h2>Cuenta</h2>
-    <form class="narrow panel" id="pwForm">
-      <label>Contraseña actual<input class="field" type="password" name="current" autocomplete="current-password" required></label>
-      <label>Nueva contraseña (mín. 8 caracteres)<input class="field" type="password" name="next" minlength="8" autocomplete="new-password" required></label>
-      <label>Repite la nueva contraseña<input class="field" type="password" name="again" minlength="8" autocomplete="new-password" required></label>
-      <button class="btn" type="submit">Cambiar contraseña</button>
-    </form>
-    <p><button class="btn metal" type="button" id="logout">Cerrar sesión</button></p>`.s;
-  $('#logout').addEventListener('click', () => run(async () => { await api('/logout', { method: 'POST' }); showLogin(); }));
+// ───────────── cuenta y usuarios ─────────────
+const MIN_PW = 10;
+let usersCache = [];
+async function renderAccount(view) {
+  const isAdmin = me.role === 'admin';
+  if (isAdmin) usersCache = await api('/users');
+  view.innerHTML = h`<div class="bar view-head"><div><h2>Cuenta</h2><span class="muted hint">${me.user} · ${ROLE_LABEL[me.role] || me.role}</span></div>
+      <button class="btn metal" type="button" data-act="logout">Cerrar sesión</button></div>
+    <div class="acct-grid">
+      <section class="panel">
+        <h3>Cambiar mi contraseña</h3>
+        <form class="narrow" id="pwForm" novalidate>
+          <input type="text" name="username" autocomplete="username" value="${me.user}" hidden>
+          <label>Contraseña actual<input class="field" type="password" name="current" autocomplete="current-password" required></label>
+          <label>Nueva contraseña (mín. ${MIN_PW} caracteres)<input class="field" type="password" name="next" minlength="${MIN_PW}" autocomplete="new-password" required></label>
+          <label>Repite la nueva contraseña<input class="field" type="password" name="again" minlength="${MIN_PW}" autocomplete="new-password" required></label>
+          <button class="btn" type="submit">Cambiar contraseña</button>
+          <p class="muted fine">Al cambiarla se cierra tu sesión en los demás dispositivos.</p>
+        </form>
+      </section>
+      ${isAdmin ? h`<section class="panel">
+        <h3>Nuevo usuario</h3>
+        <form class="narrow" id="newUserForm" novalidate autocomplete="off">
+          <label>Usuario<input class="field" name="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,31}" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off"></label>
+          <label>Rol<select class="field" name="role">
+            <option value="staff">Empleado</option>
+            <option value="admin">Administrador</option></select></label>
+          <p class="muted fine">Empleado: productos, pedidos y reseñas. Administrador: además gestiona usuarios.</p>
+          <label>Contraseña inicial (mín. ${MIN_PW} caracteres)<input class="field" type="password" name="password" minlength="${MIN_PW}" autocomplete="new-password" required></label>
+          <label>Repite la contraseña<input class="field" type="password" name="again" minlength="${MIN_PW}" autocomplete="new-password" required></label>
+          <button class="btn" type="submit">Crear usuario</button>
+          <p class="muted fine">Comparte la contraseña inicial en persona; nunca se muestra de nuevo.</p>
+        </form>
+      </section>` : ''}
+    </div>
+    ${isAdmin ? h`<section class="users-sec"><h3>Usuarios del panel (${usersCache.length})</h3>
+      <ul class="ucards">${usersCache.map((u) => {
+        const self = u.username === me.user;
+        return h`<li class="ucard${u.active ? '' : ' off'}" data-user="${u.username}">
+          <div class="ucard-main"><strong>${u.username}${self ? ' (tú)' : ''}</strong>
+            <span class="pcard-flags"><span class="flag role">${ROLE_LABEL[u.role] || u.role}</span><span class="flag ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span></span>
+            ${u.created_at ? h`<span class="muted fine">Creado: ${u.created_at.slice(0, 10)}</span>` : ''}</div>
+          ${self ? h`<p class="muted fine">Tu propia cuenta: usa «Cambiar mi contraseña».</p>` : h`<div class="ucard-acts">
+            <button class="btn metal small" type="button" data-act="user-reset">Restablecer contraseña</button>
+            <button class="btn metal small" type="button" data-act="user-role" data-role="${u.role === 'admin' ? 'staff' : 'admin'}">${u.role === 'admin' ? 'Cambiar a empleado' : 'Hacer administrador'}</button>
+            <button class="btn metal small" type="button" data-act="user-toggle">${u.active ? 'Desactivar' : 'Activar'}</button>
+            <button class="btn danger small" type="button" data-act="user-delete">Eliminar</button>
+          </div>`}
+        </li>`;
+      })}</ul></section>` : ''}`.s;
 }
 
+// Acciones sobre usuarios: todas se confirman y el servidor vuelve a validar permisos y el último administrador.
+function openUserDialog(kind, username) {
+  const dlg = $('#userDlg');
+  const title = kind === 'reset' ? `Restablecer contraseña de ${username}` : `Eliminar a ${username}`;
+  dlg.innerHTML = h`<form class="sheet-form" id="userForm" data-kind="${kind}" data-user="${username}" novalidate>
+    <header class="sheet-head"><div class="sheet-head-title"><h2>${title}</h2></div>
+      <button class="icon-btn" type="button" data-act="close" aria-label="Cerrar">${CLOSE_ICON}</button></header>
+    <div class="sheet-scroll narrow">
+      ${kind === 'reset' ? h`<p class="muted">Se cerrarán las sesiones abiertas de ${username}.</p>
+        <label>Nueva contraseña (mín. ${MIN_PW} caracteres)<input class="field" type="password" name="password" minlength="${MIN_PW}" autocomplete="new-password" required></label>
+        <label>Repite la contraseña<input class="field" type="password" name="again" minlength="${MIN_PW}" autocomplete="new-password" required></label>`
+      : h`<p>La cuenta <strong>${username}</strong> se eliminará y no podrá iniciar sesión. Para confirmar, escribe <strong>tu</strong> contraseña.</p>
+        <label>Tu contraseña<input class="field" type="password" name="password" autocomplete="current-password" required></label>`}
+    </div>
+    <footer class="sheet-foot"><p class="save-msg" id="userMsg" role="alert"></p>
+      <div class="sheet-foot-btns"><button class="btn metal" type="button" data-act="close">Cancelar</button>
+      <button class="btn ${kind === 'reset' ? '' : 'danger'}" type="submit">${kind === 'reset' ? 'Guardar contraseña' : 'Eliminar usuario'}</button></div></footer>
+  </form>`.s;
+  dlg.showModal();
+  dlg.querySelector('input[type=password]')?.focus();
+}
+$('#userDlg').addEventListener('click', (e) => { if (e.target === $('#userDlg') || e.target.closest('[data-act=close]')) $('#userDlg').close(); });
+$('#userDlg').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const form = e.target; const f = Object.fromEntries(new FormData(form)); const msg = $('#userMsg'); const btn = form.querySelector('button[type=submit]');
+  const user = form.dataset.user;
+  if (form.dataset.kind === 'reset') {
+    if (f.password.length < MIN_PW) { msg.textContent = `Mínimo ${MIN_PW} caracteres`; return; }
+    if (f.password !== f.again) { msg.textContent = 'Las contraseñas no coinciden'; return; }
+  } else if (!f.password) { msg.textContent = 'Escribe tu contraseña'; return; }
+  btn.disabled = true; msg.textContent = '';
+  run(async () => {
+    try {
+      if (form.dataset.kind === 'reset') {
+        await api(`/users/${encodeURIComponent(user)}/password`, { method: 'POST', body: { password: f.password } });
+        toast(`✓ Contraseña de ${user} restablecida`);
+      } else {
+        await api(`/users/${encodeURIComponent(user)}`, { method: 'DELETE', body: { password: f.password } });
+        toast(`Usuario ${user} eliminado`);
+      }
+      $('#userDlg').close(); await renderAccount($('#view'));
+    } catch (err) { msg.textContent = err.message; btn.disabled = false; if (err.message === 'Sesión terminada') throw err; }
+  });
+});
+$('#view').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'logout') { logout(); return; }
+  const card = b.closest('[data-user]');
+  if (!card || !act.startsWith('user-')) return;
+  const username = card.dataset.user;
+  const u = usersCache.find((x) => x.username === username);
+  if (!u) return;
+  if (act === 'user-reset') openUserDialog('reset', username);
+  else if (act === 'user-delete') openUserDialog('delete', username);
+  else run(async () => {
+    const body = act === 'user-toggle' ? { active: !u.active } : { role: b.dataset.role };
+    const q = act === 'user-toggle'
+      ? (u.active ? `¿Desactivar a ${username}? No podrá iniciar sesión y se cerrarán sus sesiones.` : `¿Activar de nuevo a ${username}?`)
+      : `¿Cambiar el rol de ${username} a ${ROLE_LABEL[b.dataset.role]}?`;
+    if (!confirm(q)) return;
+    b.disabled = true;
+    try { await api(`/users/${encodeURIComponent(username)}`, { method: 'PATCH', body }); toast('✓ Usuario actualizado'); await renderAccount($('#view')); }
+    finally { b.disabled = false; }
+  });
+});
+
 // ───────────── arranque ─────────────
-(async () => {
-  try { const me = await api('/me'); if (me.user) await showApp(); else showLogin(); } catch { showLogin(); }
-})();
+async function boot() {
+  try { const session = await api('/me'); if (session.user) await showApp(session); else showLogin(); } catch { showLogin(); }
+}
+boot();
+// Si el navegador restaura el panel desde su caché de «atrás/adelante», se vuelve a comprobar la sesión.
+window.addEventListener('pageshow', (e) => { if (e.persisted) boot(); });

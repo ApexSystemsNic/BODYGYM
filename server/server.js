@@ -1,10 +1,10 @@
 import { createServer } from 'node:http';
-import { readFile, stat, mkdir } from 'node:fs/promises';
+import { readFile, stat, mkdir, rm } from 'node:fs/promises';
 import { dirname, join, extname, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, createHash } from 'node:crypto';
 import { gzipSync, brotliCompressSync, constants as zc } from 'node:zlib';
-import { db, hydrate, saveProduct, hashPassword, verifyPassword } from './db.js';
+import { db, hydrate, saveProduct, hashPassword, verifyPassword, normalizeUsername, MIN_PASSWORD, initialPasswordFile } from './db.js';
 import { esc, categoryFromSlug, productUrl, normalizeCategory, categoryUrl, CATEGORY_ORDER, ASSET_V } from '../public/js/ui.js'; // mismas plantillas que el navegador
 import { productWebp, PRODUCT_SIZES } from './images.js';
 import { buildCatalogPage, buildProductPage, buildNotFound, findProductBySlug, findProductById, footNav, drawerCats, imagePreload, safeJson, DISCLAIMER } from './pages.js';
@@ -21,6 +21,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = join(root, 'public');
 const PORT = Number(process.env.PORT) || 3000;
 const SECURE_COOKIE = process.env.NODE_ENV === 'production';
+// Detrás de un proxy inverso (Nginx, Caddy…) la IP real del cliente llega en X-Forwarded-For.
+// Solo se usa si TRUST_PROXY=true; así nadie puede falsificar su IP para evadir los límites de intentos.
+const TRUST_PROXY = process.env.TRUST_PROXY === 'true';
+const clientIp = (req) => (TRUST_PROXY && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress || '';
 // ── SEO / indexación ──
 // SITE_URL = dominio público definitivo, sin "/" final (p. ej. https://www.midominio.com).
 // ALLOW_INDEXING=true solo en producción. Sin ambas variables el sitio responde
@@ -68,20 +72,30 @@ async function readJson(req) {
 }
 
 // ───────────── sesiones admin ─────────────
-const sessions = new Map(); // token -> { user, exp }
+// Sesiones en memoria: token aleatorio (256 bits) -> { user, exp }. Cada petición comprueba además que la
+// cuenta siga existiendo y activa, de modo que desactivar o eliminar un usuario corta su acceso al instante.
+const sessions = new Map();
 const SESSION_MS = 8 * 60 * 60 * 1000;
 const attempts = new Map(); // clave -> { n, until }
+const accountStmt = db.prepare('SELECT username, role, active FROM admins WHERE username = ?');
 
 function cookieOf(req, name) {
   const m = (req.headers.cookie || '').split(/;\s*/).find((c) => c.startsWith(name + '='));
-  return m ? decodeURIComponent(m.slice(name.length + 1)) : null;
+  if (!m) return null;
+  try { return decodeURIComponent(m.slice(name.length + 1)); } catch { return null; }
 }
 function sessionOf(req) {
   const t = cookieOf(req, 'bf_session');
   const s = t && sessions.get(t);
   if (!s) return null;
   if (s.exp < Date.now()) { sessions.delete(t); return null; }
-  return { token: t, user: s.user };
+  const acc = accountStmt.get(s.user);
+  if (!acc || !acc.active) { sessions.delete(t); return null; }
+  return { token: t, user: acc.username, role: acc.role };
+}
+// Cierra todas las sesiones de una cuenta (salvo, opcionalmente, la actual).
+function dropSessions(user, exceptToken = null) {
+  for (const [t, s] of sessions) if (s.user === user && t !== exceptToken) sessions.delete(t);
 }
 function requireAdmin(req) {
   const s = sessionOf(req);
@@ -90,8 +104,15 @@ function requireAdmin(req) {
   if (req.method !== 'GET' && req.headers['x-requested-with'] !== 'fetch') throw new HttpError(403, 'Solicitud no válida');
   return s;
 }
+const requireRole = (session, role) => { if (session.role !== role) throw new HttpError(403, 'No tienes permiso para esta acción'); };
 const cookieHeader = (token, maxAge) =>
   `bf_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${SECURE_COOKIE ? '; Secure' : ''}`;
+// Limpieza periódica de sesiones vencidas y contadores de intentos caducados.
+setInterval(() => {
+  const now = Date.now();
+  for (const [t, s] of sessions) if (s.exp < now) sessions.delete(t);
+  for (const [k, a] of attempts) if (a.until < now) attempts.delete(k);
+}, 10 * 60_000).unref();
 
 // ───────────── validación ─────────────
 const str = (v, max) => String(v ?? '').trim().slice(0, max);
@@ -241,7 +262,7 @@ async function publicApi(req, res, path) {
   if (req.method === 'GET' && path === '/api/reviews') return json(res, 200, approvedReviews());
   // Reseña pública: siempre queda pendiente de moderación; el cliente nunca decide approved/visible.
   if (req.method === 'POST' && path === '/api/reviews') {
-    if (rateLimit('review:' + req.socket.remoteAddress, 5, 10 * 60_000)) throw new HttpError(429, 'Demasiadas reseñas enviadas, intenta más tarde');
+    if (rateLimit('review:' + clientIp(req), 5, 10 * 60_000)) throw new HttpError(429, 'Demasiadas reseñas enviadas, intenta más tarde');
     const b = await readJson(req);
     const name = str(b.name, 60);
     if (!name) throw new HttpError(400, 'El nombre es obligatorio');
@@ -255,7 +276,7 @@ async function publicApi(req, res, path) {
     return json(res, 201, { ok: true });
   }
   if (req.method === 'POST' && path === '/api/orders') {
-    if (rateLimit('order:' + req.socket.remoteAddress, 20, 60_000)) throw new HttpError(429, 'Demasiados pedidos, intenta en un minuto');
+    if (rateLimit('order:' + clientIp(req), 20, 60_000)) throw new HttpError(429, 'Demasiados pedidos, intenta en un minuto');
     return json(res, 201, createOrder(await readJson(req)));
   }
   return false;
@@ -264,36 +285,48 @@ async function publicApi(req, res, path) {
 // ───────────── API admin ─────────────
 async function adminApi(req, res, path) {
   if (req.method === 'POST' && path === '/api/admin/login') {
-    const key = 'login:' + req.socket.remoteAddress;
-    const rl = attempts.get(key);
-    if (rl && Date.now() < rl.until && rl.n >= 5) throw new HttpError(429, 'Demasiados intentos. Espera 15 minutos.');
+    if (req.headers['x-requested-with'] !== 'fetch') throw new HttpError(403, 'Solicitud no válida');
+    // Límite de intentos fallidos por IP y por nombre de usuario (15 minutos).
+    const ipKey = 'login-ip:' + clientIp(req);
     const { username, password } = await readJson(req);
-    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(str(username, 60));
-    const ok = admin ? verifyPassword(String(password ?? ''), admin) : (hashPassword('x'), false); // tiempo similar
-    if (!ok) {
-      const cur = attempts.get(key);
-      const fresh = cur && Date.now() < cur.until ? cur : { n: 0, until: 0 };
-      fresh.n++; fresh.until = Date.now() + 15 * 60_000;
-      attempts.set(key, fresh);
+    const uname = str(username, 60).toLowerCase();
+    const userKey = 'login-user:' + uname;
+    const blocked = (k, max) => { const a = attempts.get(k); return a && Date.now() < a.until && a.n >= max; };
+    if (blocked(ipKey, 5) || blocked(userKey, 10)) throw new HttpError(429, 'Demasiados intentos. Espera 15 minutos.');
+    const admin = db.prepare('SELECT username, salt, hash, role, active FROM admins WHERE lower(username) = ?').get(uname);
+    // Mismo tiempo de respuesta y mismo mensaje para usuario inexistente, desactivado o contraseña incorrecta.
+    const valid = admin ? verifyPassword(String(password ?? ''), admin) : (hashPassword('x'), false);
+    if (!valid || !admin.active) {
+      for (const k of [ipKey, userKey]) {
+        const cur = attempts.get(k);
+        const fresh = cur && Date.now() < cur.until ? cur : { n: 0, until: 0 };
+        fresh.n++; fresh.until = Date.now() + 15 * 60_000;
+        attempts.set(k, fresh);
+      }
       throw new HttpError(401, 'Usuario o contraseña incorrectos');
     }
-    attempts.delete(key);
+    attempts.delete(ipKey); attempts.delete(userKey);
+    // Nunca se reutiliza un token presentado por el navegador: siempre se emite uno nuevo (anti session fixation).
+    const prev = cookieOf(req, 'bf_session');
+    if (prev) sessions.delete(prev);
     const token = randomBytes(32).toString('base64url');
     sessions.set(token, { user: admin.username, exp: Date.now() + SESSION_MS });
-    return send(res, 200, JSON.stringify({ user: admin.username }), {
+    return send(res, 200, JSON.stringify({ user: admin.username, role: admin.role }), {
       'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookieHeader(token, SESSION_MS / 1000), 'Cache-Control': 'no-store',
     });
   }
   if (req.method === 'POST' && path === '/api/admin/logout') {
-    const s = sessionOf(req);
-    if (s) sessions.delete(s.token);
-    return send(res, 200, '{}', { 'Content-Type': 'application/json', 'Set-Cookie': cookieHeader('', 0) });
+    const t = cookieOf(req, 'bf_session');
+    if (t) sessions.delete(t);
+    return send(res, 200, '{}', {
+      'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookieHeader('', 0), 'Cache-Control': 'no-store',
+    });
   }
 
   // Comprobación de sesión al abrir el panel: responde 200 también sin sesión (evita un 401 en consola).
   if (req.method === 'GET' && path === '/api/admin/me') {
     const s = sessionOf(req);
-    return json(res, 200, { user: s ? s.user : null });
+    return json(res, 200, s ? { user: s.user, role: s.role } : { user: null });
   }
 
   const session = requireAdmin(req);
@@ -302,12 +335,20 @@ async function adminApi(req, res, path) {
 
   if (req.method === 'POST' && path === '/api/admin/password') {
     const { current, next } = await readJson(req);
-    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(session.user);
+    const admin = db.prepare('SELECT username, salt, hash FROM admins WHERE username = ?').get(session.user);
     if (!verifyPassword(String(current ?? ''), admin)) throw new HttpError(400, 'La contraseña actual no coincide');
-    if (String(next ?? '').length < 8) throw new HttpError(400, 'La nueva contraseña debe tener al menos 8 caracteres');
-    const { salt, hash } = hashPassword(String(next));
+    const pw = validPassword(next);
+    const { salt, hash } = hashPassword(pw);
     db.prepare('UPDATE admins SET salt = ?, hash = ? WHERE username = ?').run(salt, hash, session.user);
+    dropSessions(session.user, session.token); // cierra la cuenta en otros dispositivos
+    await rm(initialPasswordFile, { force: true }).catch(() => {});
     return json(res, 200, { ok: true });
+  }
+
+  // ── usuarios del panel (solo administradores) ──
+  if (path === '/api/admin/users' || path.startsWith('/api/admin/users/')) {
+    requireRole(session, 'admin');
+    return usersApi(req, res, path, session);
   }
 
   if (req.method === 'GET' && path === '/api/admin/products') {
@@ -362,6 +403,7 @@ async function adminApi(req, res, path) {
   }
   m = path.match(/^\/api\/admin\/products\/([a-z0-9-]+)\/image$/);
   if (m && req.method === 'POST') {
+    if (!db.prepare('SELECT 1 FROM products WHERE id = ?').get(m[1])) throw new HttpError(404, 'Producto no encontrado');
     if (!/^image\/(jpeg|png|webp)$/.test(req.headers['content-type'] || '')) throw new HttpError(415, 'Sube una imagen JPG, PNG o WebP');
     const buf = await readBody(req, 10 * 1024 * 1024);
     const base = `img/products/${m[1]}-${Date.now().toString(36)}`;
@@ -386,7 +428,7 @@ async function adminApi(req, res, path) {
   }
   if (m && req.method === 'DELETE') {
     const { password } = await readJson(req);
-    const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(session.user);
+    const admin = db.prepare('SELECT salt, hash FROM admins WHERE username = ?').get(session.user);
     if (!admin || !verifyPassword(String(password ?? ''), admin)) throw new HttpError(403, 'Contraseña incorrecta');
     const info = db.prepare('DELETE FROM orders WHERE id = ?').run(Number(m[1]));
     if (!info.changes) throw new HttpError(404, 'Pedido no encontrado');
@@ -428,11 +470,80 @@ async function adminApi(req, res, path) {
   return false;
 }
 
+// ───────────── usuarios del panel ─────────────
+// Nunca se devuelven hash, sal ni tokens. Todas las comprobaciones de permisos se hacen aquí, en el servidor.
+const ROLES = new Set(['admin', 'staff']);
+const listUsers = () => db.prepare('SELECT username, role, active, created_at FROM admins ORDER BY role, username').all()
+  .map((u) => ({ ...u, active: !!u.active }));
+const activeAdmins = () => db.prepare("SELECT COUNT(*) AS n FROM admins WHERE role = 'admin' AND active = 1").get().n;
+function validPassword(p) {
+  const pw = String(p ?? '');
+  if (pw.length < MIN_PASSWORD) throw new HttpError(400, `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres`);
+  if (pw.length > 200) throw new HttpError(400, 'La contraseña es demasiado larga');
+  return pw;
+}
+
+async function usersApi(req, res, path, session) {
+  if (path === '/api/admin/users') {
+    if (req.method === 'GET') return json(res, 200, listUsers());
+    if (req.method === 'POST') {
+      const b = await readJson(req);
+      const username = normalizeUsername(b.username);
+      if (!username) throw new HttpError(400, 'Usuario inválido: 3 a 32 caracteres (letras, números, punto, guion o guion bajo)');
+      const role = ROLES.has(b.role) ? b.role : 'staff';
+      const pw = validPassword(b.password);
+      if (db.prepare('SELECT 1 FROM admins WHERE lower(username) = ?').get(username)) throw new HttpError(409, 'Ese nombre de usuario ya existe');
+      const { salt, hash } = hashPassword(pw);
+      db.prepare("INSERT INTO admins (username, salt, hash, role, active, created_at) VALUES (?,?,?,?,1,datetime('now'))").run(username, salt, hash, role);
+      return json(res, 201, listUsers().find((u) => u.username === username));
+    }
+    throw new HttpError(405, 'Método no permitido');
+  }
+  const m = path.match(/^\/api\/admin\/users\/([^/]+)(\/password)?$/);
+  let target = null;
+  try { target = m && normalizeUsername(decodeURIComponent(m[1])); } catch { /* inválido */ }
+  const acc = target && db.prepare('SELECT username, role, active FROM admins WHERE username = ?').get(target);
+  if (!acc) throw new HttpError(404, 'Usuario no encontrado');
+  const self = acc.username === session.user;
+  const isLastAdmin = acc.role === 'admin' && acc.active && activeAdmins() <= 1;
+
+  if (m[2] && req.method === 'POST') { // restablecer contraseña de otra cuenta
+    if (self) throw new HttpError(400, 'Para tu propia cuenta usa «Cambiar contraseña»');
+    const pw = validPassword((await readJson(req)).password);
+    const { salt, hash } = hashPassword(pw);
+    db.prepare('UPDATE admins SET salt = ?, hash = ? WHERE username = ?').run(salt, hash, acc.username);
+    dropSessions(acc.username);
+    return json(res, 200, { ok: true });
+  }
+  if (!m[2] && req.method === 'PATCH') { // activar/desactivar o cambiar rol
+    if (self) throw new HttpError(400, 'No puedes cambiar el estado ni el rol de tu propia cuenta');
+    const b = await readJson(req);
+    const active = typeof b.active === 'boolean' ? b.active : !!acc.active;
+    const role = ROLES.has(b.role) ? b.role : acc.role;
+    if (isLastAdmin && (!active || role !== 'admin')) throw new HttpError(409, 'Debe quedar al menos un administrador activo');
+    db.prepare('UPDATE admins SET active = ?, role = ? WHERE username = ?').run(active ? 1 : 0, role, acc.username);
+    if (!active) dropSessions(acc.username);
+    return json(res, 200, listUsers().find((u) => u.username === acc.username));
+  }
+  if (!m[2] && req.method === 'DELETE') {
+    if (self) throw new HttpError(400, 'No puedes eliminar tu propia cuenta');
+    if (isLastAdmin) throw new HttpError(409, 'Debe quedar al menos un administrador activo');
+    const me = db.prepare('SELECT salt, hash FROM admins WHERE username = ?').get(session.user);
+    if (!verifyPassword(String((await readJson(req)).password ?? ''), me)) throw new HttpError(403, 'Tu contraseña no es correcta');
+    db.prepare('DELETE FROM admins WHERE username = ?').run(acc.username);
+    dropSessions(acc.username);
+    return json(res, 200, { ok: true });
+  }
+  throw new HttpError(405, 'Método no permitido');
+}
+
 // ───────────── archivos estáticos ─────────────
 const SECURITY = {
-  'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src https://www.google.com https://maps.google.com; base-uri 'self'; form-action 'self'",
+  'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src https://www.google.com https://maps.google.com; base-uri 'self'; form-action 'self'; object-src 'none'",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Frame-Options': 'SAMEORIGIN',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+  ...(SECURE_COOKIE ? { 'Strict-Transport-Security': 'max-age=31536000' } : {}),
 };
 
 // ───────────── versión de los archivos del frontend ─────────────
@@ -597,11 +708,13 @@ async function serveStatic(req, res, path) {
     if (!extname(rel) || rel.endsWith('.html')) return sendHtml(req, res, await renderPage(req, 'notfound', {}), 404);
     throw new HttpError(404, 'No encontrado');
   }
-  const extra = isAdmin ? { ...SECURITY, 'X-Robots-Tag': 'noindex, nofollow' } : SECURITY;
+  // El panel se aísla además de otras ventanas (la tienda no, porque abre WhatsApp en una pestaña nueva).
+  const extra = isAdmin ? { ...SECURITY, 'X-Robots-Tag': 'noindex, nofollow', 'Cross-Origin-Opener-Policy': 'same-origin' } : SECURITY;
+  const adminPage = isAdmin && extname(rel) === '.html'; // el panel nunca se guarda en caché (ni en «atrás»)
   const versioned = /[?&]v=/.test(req.url);
   const cacheControl = rel.startsWith('/img/') || rel.startsWith('/icons/') || rel.startsWith('/images/')
     ? (versioned ? 'public, max-age=31536000, immutable' : 'public, max-age=86400')
-    : (versioned && /\.(css|js)$/.test(rel) ? 'public, max-age=31536000, immutable' : 'no-cache');
+    : (versioned && /\.(css|js)$/.test(rel) ? 'public, max-age=31536000, immutable' : adminPage ? 'no-store' : 'no-cache');
   const ext = extname(file).toLowerCase();
   const templated = ext === '.js' || ext === '.html'; // llevan __BUILD__ / __IMG_V__ en sus URL
   const v = templated ? await buildId() : '';

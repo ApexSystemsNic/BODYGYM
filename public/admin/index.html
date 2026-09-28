@@ -2,45 +2,65 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#16171a">
+  <meta name="theme-color" content="#0f1115">
+  <meta name="color-scheme" content="dark">
   <title>Administración | BodyFactory Gym</title>
+  <link rel="icon" type="image/webp" href="/img/logo-96.webp">
   <link rel="stylesheet" href="/css/styles.css?v=__BUILD__">
   <link rel="stylesheet" href="/admin/admin.css?v=__BUILD__">
   <script type="module" src="/admin/admin.js?v=__BUILD__"></script>
 </head>
-<body>
+<body class="admin">
   <section id="login" class="login" hidden>
-    <form id="loginForm" class="panel" autocomplete="on">
-      <h1>Administración</h1>
-      <p class="muted" style="margin:0">BodyFactory Gym</p>
-      <label>Usuario<input class="field" name="username" autocomplete="username" required></label>
-      <label>Contraseña<input class="field" name="password" type="password" autocomplete="current-password" required></label>
+    <form id="loginForm" class="panel login-card" autocomplete="on" novalidate>
+      <img class="login-logo" src="/img/logo-192.webp?v=__IMG_V__" srcset="/img/logo-192.webp?v=__IMG_V__ 192w, /img/logo-512.webp?v=__IMG_V__ 512w" sizes="132px" width="132" height="107" alt="Body Factory Gym">
+      <h1 class="login-title">Administración<small>Body Factory Gym</small></h1>
+      <label>Usuario<input class="field" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required maxlength="60"></label>
+      <label>Contraseña<input class="field" name="password" type="password" autocomplete="current-password" required maxlength="200"></label>
       <p id="loginErr" class="err" role="alert"></p>
-      <button class="btn block" type="submit">Entrar</button>
+      <button class="btn block" type="submit">Iniciar sesión</button>
     </form>
   </section>
 
   <div id="app" hidden>
-    <header class="topbar">
-      <div class="wrap topbar-in">
+    <header class="topbar admin-top">
+      <div class="wrap admin-top-in">
         <span class="brand-name">Admin<small>BodyFactory Gym</small></span>
-        <nav class="chips" id="tabs" aria-label="Secciones">
-          <button type="button" class="chip" data-tab="products" aria-pressed="true">Productos</button>
-          <button type="button" class="chip" data-tab="orders" aria-pressed="false">Pedidos</button>
-          <button type="button" class="chip" data-tab="reviews" aria-pressed="false">Reseñas<span id="revBadge"></span></button>
-          <button type="button" class="chip" data-tab="account" aria-pressed="false">Cuenta</button>
+        <nav class="admin-tabs" id="tabs" aria-label="Secciones del panel">
+          <button type="button" class="admin-tab" data-tab="products" aria-current="page">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8-4 8 4v10l-8 4-8-4z M4 7l8 4 8-4 M12 11v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            <span>Productos</span></button>
+          <button type="button" class="admin-tab" data-tab="orders">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z M9 8h6 M9 12h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+            <span>Pedidos</span></button>
+          <button type="button" class="admin-tab" data-tab="reviews">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            <span>Reseñas</span><span id="revBadge" class="tab-badge" hidden></span></button>
+          <button type="button" class="admin-tab" data-tab="account">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Cuenta</span></button>
         </nav>
-        <a class="btn metal small" href="/" target="_blank" rel="noopener">Ver tienda</a>
+        <div class="admin-actions">
+          <span class="whoami" id="whoami"></span>
+          <a class="btn metal small" href="/" target="_blank" rel="noopener" aria-label="Ver tienda (se abre en otra pestaña)">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="lbl">Ver tienda</span></a>
+          <button type="button" class="btn metal small" id="logoutBtn" aria-label="Cerrar sesión">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4 M10 16l4-4-4-4 M14 12H4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="lbl lbl-long">Cerrar sesión</span><span class="lbl lbl-short">Salir</span></button>
+        </div>
       </div>
     </header>
     <main class="wrap" id="view"></main>
   </div>
 
-  <dialog id="formDlg" class="sheet" aria-label="Producto"></dialog>
+  <dialog id="formDlg" class="sheet admin-sheet" aria-label="Producto"></dialog>
+  <dialog id="stockDlg" class="sheet admin-sheet small-sheet" aria-label="Cambiar stock"></dialog>
   <dialog id="bulkDlg" class="sheet" aria-label="Confirmar acción masiva"></dialog>
   <dialog id="orderDeleteDlg" class="sheet" aria-label="Eliminar pedido"></dialog>
+  <dialog id="userDlg" class="sheet admin-sheet small-sheet" aria-label="Usuario"></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

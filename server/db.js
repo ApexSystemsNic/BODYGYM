@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
-import { readFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
@@ -66,9 +66,33 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS admins (
   username TEXT PRIMARY KEY,
   salt TEXT NOT NULL,
-  hash TEXT NOT NULL
+  hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'admin',
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT ''
 );
 `);
+
+// Migración aditiva: cuentas de usuario del panel con rol y estado.
+//   role   'admin' = administrador (gestiona usuarios) · 'staff' = empleado (productos, pedidos y reseñas)
+//   active 1 = puede iniciar sesión · 0 = desactivada
+// Las cuentas existentes conservan su acceso como administradoras. Idempotente: solo añade lo que falta.
+{
+  const cols = new Set(db.prepare('PRAGMA table_info(admins)').all().map((c) => c.name));
+  const add = [
+    ['role', "ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'"],
+    ['active', 'ALTER TABLE admins ADD COLUMN active INTEGER NOT NULL DEFAULT 1'],
+    ['created_at', "ALTER TABLE admins ADD COLUMN created_at TEXT NOT NULL DEFAULT ''"],
+  ].filter(([c]) => !cols.has(c));
+  if (add.length) {
+    db.exec('BEGIN');
+    try {
+      for (const [, sql] of add) db.exec(sql);
+      db.exec('COMMIT');
+    } catch (e) { db.exec('ROLLBACK'); throw e; }
+    console.log(`Migración aplicada: admins (${add.map(([c]) => c).join(', ')}).`);
+  }
+}
 
 // Migración aditiva: advertencias por producto (bases creadas antes de existir la columna).
 if (!db.prepare('PRAGMA table_info(products)').all().some((c) => c.name === 'warnings')) {
@@ -148,19 +172,30 @@ function seedIfEmpty() {
   console.log(`Base de datos inicializada con el catálogo (${(seed.products || []).length} productos).`);
 }
 
+// Archivo con la contraseña inicial generada (solo si no se definió ADMIN_PASSWORD). Vive junto a la base,
+// fuera de public/ y de Git; se elimina en cuanto esa cuenta cambia su contraseña.
+export const initialPasswordFile = join(dirname(dbPath), 'initial-admin-password.txt');
+
 function ensureAdmin() {
   if (db.prepare('SELECT COUNT(*) AS n FROM admins').get().n > 0) return;
-  const username = process.env.ADMIN_USER || 'admin';
+  const username = normalizeUsername(process.env.ADMIN_USER || 'admin') || 'admin';
   let password = process.env.ADMIN_PASSWORD;
   const generated = !password;
-  if (generated) password = randomBytes(9).toString('base64url');
+  if (generated) password = randomBytes(12).toString('base64url');
   const { salt, hash } = hashPassword(password);
-  db.prepare('INSERT INTO admins (username, salt, hash) VALUES (?,?,?)').run(username, salt, hash);
-  console.log('──────────────────────────────────────────────');
-  console.log(` Usuario admin creado: ${username}`);
-  if (generated) console.log(` Contraseña generada:  ${password}   (guárdala; cámbiala en /admin)`);
-  console.log('──────────────────────────────────────────────');
+  db.prepare("INSERT INTO admins (username, salt, hash, role, active, created_at) VALUES (?,?,?,'admin',1,datetime('now'))").run(username, salt, hash);
+  // La contraseña nunca se escribe en la consola ni en los logs.
+  if (generated) writeFileSync(initialPasswordFile, `${username}\n${password}\n`, { mode: 0o600 });
+  console.log(`Usuario administrador creado: ${username}.${generated ? ` Contraseña inicial en ${initialPasswordFile} (cámbiala al entrar).` : ''}`);
 }
+
+// Nombres de usuario: minúsculas, 3-32 caracteres, letras, números, punto, guion y guion bajo.
+export const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,31}$/;
+export function normalizeUsername(u) {
+  const v = String(u ?? '').trim().toLowerCase();
+  return USERNAME_RE.test(v) ? v : '';
+}
+export const MIN_PASSWORD = 10;
 
 seedIfEmpty();
 ensureAdmin();

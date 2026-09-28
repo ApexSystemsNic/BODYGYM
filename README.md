@@ -36,7 +36,8 @@ si existe (`node --env-file-if-exists`). `.env` nunca se versiona; `.env.example
 | `SITE_URL` | vacío | Origen público canónico, sin `/` final (p. ej. `https://www.dominio.com`). Se usa en canonical, Open Graph, JSON-LD, robots.txt y sitemap.xml. |
 | `ALLOW_INDEXING` | `false` | `true` solo en el dominio de producción. La indexación se activa únicamente si además `SITE_URL` empieza por `https://`. |
 | `DB_PATH` | `data/bodyfactory.db` | Ruta del archivo SQLite. |
-| `ADMIN_USER` / `ADMIN_PASSWORD` | `admin` / generada | Solo se usan al crear el primer administrador (base sin admins). Si no hay contraseña, se genera una aleatoria y se muestra **una sola vez** en la consola. |
+| `ADMIN_USER` / `ADMIN_PASSWORD` | `admin` / generada | Solo se usan al crear el primer administrador (base sin cuentas). Si no hay contraseña, se genera una aleatoria y se guarda en `data/initial-admin-password.txt` (nunca en la consola); el archivo se borra cuando esa cuenta cambia su contraseña. |
+| `TRUST_PROXY` | `false` | `true` solo detrás de un proxy inverso propio (Nginx, Caddy): la IP del cliente se toma de `X-Forwarded-For` para los límites de intentos. |
 
 Datos del negocio (WhatsApp, Instagram, dirección, mapa, horario, preguntas frecuentes): `public/data/site.json`.
 
@@ -134,14 +135,34 @@ Luego registra `https://www.dominio-definitivo.com/sitemap.xml` en Google Search
 4. Mantener el proceso activo con PM2 (`pm2 start ecosystem.config.cjs --env production`) o un servicio del sistema.
 5. Programar `npm run backup:db` y copiar los respaldos fuera del servidor.
 
+## Panel de administración y cuentas
+
+- `/admin`: productos, pedidos, reseñas y cuenta. En teléfonos y tablets los productos se muestran como tarjetas
+  (foto, precios y stock) y se editan en una hoja con guardado explícito; en escritorio se conserva la tabla con
+  edición rápida por fila y acciones masivas de visibilidad.
+- Roles (columna `admins.role`):
+  - `admin` — Administrador: todo lo anterior y además gestiona usuarios (crear, restablecer contraseña,
+    activar/desactivar, cambiar rol y eliminar).
+  - `staff` — Empleado: productos, pedidos y reseñas; solo puede cambiar su propia contraseña.
+- Reglas del servidor: nombres de usuario únicos (3–32 caracteres), contraseñas de al menos 10 caracteres,
+  siempre debe quedar al menos un administrador activo, nadie puede desactivarse, cambiar su rol ni eliminarse a
+  sí mismo, y eliminar una cuenta exige la contraseña de quien la elimina. Desactivar, eliminar o restablecer la
+  contraseña de una cuenta cierra sus sesiones al instante.
+- Migración: al arrancar, `server/db.js` añade las columnas `role`, `active` y `created_at` a `admins` si faltan
+  (idempotente). Las cuentas existentes quedan como administradoras activas.
+
 ## Seguridad
 
 - No versionar `.env`, bases de datos, respaldos ni documentos del cliente (ver `.gitignore`).
-- Contraseñas con scrypt y sal; sesión en cookie `HttpOnly` + `SameSite=Strict` (+ `Secure` en producción);
+- Contraseñas con scrypt y sal (nunca se devuelven ni se registran); sesión con token aleatorio de 256 bits en cookie
+  `HttpOnly` + `SameSite=Strict` (+ `Secure` y HSTS en producción), token nuevo en cada inicio de sesión, cierre de sesión en el servidor;
   cabecera obligatoria contra CSRF en acciones del panel; límite de intentos de inicio de sesión.
 - CSP sin scripts en línea; todo texto dinámico se escapa antes de insertarse en HTML.
 - Los precios y el stock de un pedido se recalculan en el servidor; nunca se confía en el navegador.
 - Solo se sirve el contenido de `public/`: `data/`, `server/`, `scripts/` y `.env` no son accesibles por HTTP.
+- Límite de intentos de inicio de sesión por IP y por usuario, con el mismo mensaje para usuario inexistente,
+  desactivado o contraseña incorrecta.
+- El panel se sirve con `Cache-Control: no-store`, fuera del service worker; sus APIs nunca se guardan en caché.
 - Las sesiones del panel viven en memoria: reiniciar el servidor cierra las sesiones abiertas.
 
 ## Pedidos
