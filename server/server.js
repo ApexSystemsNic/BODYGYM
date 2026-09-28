@@ -290,10 +290,15 @@ async function adminApi(req, res, path) {
     return send(res, 200, '{}', { 'Content-Type': 'application/json', 'Set-Cookie': cookieHeader('', 0) });
   }
 
+  // Comprobación de sesión al abrir el panel: responde 200 también sin sesión (evita un 401 en consola).
+  if (req.method === 'GET' && path === '/api/admin/me') {
+    const s = sessionOf(req);
+    return json(res, 200, { user: s ? s.user : null });
+  }
+
   const session = requireAdmin(req);
   if (req.method !== 'GET') res.on('finish', invalidateCatalog); // cualquier cambio del panel renueva el catálogo
 
-  if (req.method === 'GET' && path === '/api/admin/me') return json(res, 200, { user: session.user });
 
   if (req.method === 'POST' && path === '/api/admin/password') {
     const { current, next } = await readJson(req);

@@ -488,10 +488,33 @@ textarea.field { height: auto; min-height: 100px; padding: 10px 12px; resize: ve
 }
 @container catalog (max-width: 340px) {
   .grid > .card .card-actions { grid-template-columns: 1fr; }
+  /* Teléfonos de 320 px: el precio y la etiqueta «Normal» caben sin desbordar. */
+  .grid > .card .price-main { font-size: clamp(1.1rem, .9rem + 3cqi, 1.6rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .card, .toast, .btn, .chip, .gallery-editorial figure { transition: none; }
   .card:hover { transform: none; }
+}
+
+/* Pantallas táctiles: campos a 16 px (evita el zoom automático de iOS al enfocar)
+   y áreas táctiles de al menos 44 px en los controles pequeños. */
+@media (pointer: coarse) {
+  .field, .search input, .sort select { font-size: max(16px, 1em); }
+  .compare-chips .chip, .switch button { min-height: 44px; }
+  .line .qty { transform: none; }
+  .line .qty button { width: 40px; }
+  .line .qty output { min-width: 28px; }
+  .line .rm { min-width: 44px; min-height: 44px; }
+}
+
+/* Carrito en teléfonos angostos: la fila del producto cabe completa (sin cortar precio ni botones). */
+@media (max-width: 400px) {
+  .cart-lines { padding: 12px; }
+  .line { grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; padding: 8px; }
+  .line > img, .line > .noimg { width: 52px; height: 52px; }
+  .cart-foot { grid-template-columns: minmax(0, 1fr); padding: 14px 12px 16px; }
+  .cart-foot .btn { white-space: normal; text-align: center; }
+  .total-row strong { font-size: 1.5rem; }
 }

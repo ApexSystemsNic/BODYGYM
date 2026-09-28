@@ -78,7 +78,8 @@ export function img(base, { sizes, w = 400, hgt = 400, alt = '', lazy = true, pr
   return h`<img src="${u(400)}" srcset="${u(400)} 400w, ${u(800)} 800w" sizes="${sizes || CARD_SIZES}" width="${w}" height="${hgt}" alt="${alt}" ${lazy ? new Safe('loading="lazy"') : new Safe('')} ${priority ? new Safe('fetchpriority="high"') : new Safe('')} decoding="async">`;
 }
 // Ancho real de la foto en la tarjeta según las columnas del catálogo (4 / 3 / 2 / 1).
-export const CARD_SIZES = '(min-width: 1000px) min(300px, 24vw), (min-width: 700px) 31vw, (min-width: 380px) 46vw, 92vw';
+// En teléfonos la tarjeta es horizontal y la foto ocupa ~36 % del ancho: así se descarga la versión de 400 px.
+export const CARD_SIZES = '(min-width: 1000px) min(300px, 24vw), (min-width: 700px) 31vw, (min-width: 556px) 46vw, calc(36vw - 12px)';
 
 // Textos públicos: se descartan frases de uso interno o de administración que no son contenido
 // comercial ("pendiente", "por confirmar", "consulta la etiqueta", "ver envase"...).

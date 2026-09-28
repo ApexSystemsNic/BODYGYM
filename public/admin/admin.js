@@ -649,5 +649,5 @@ function renderAccount(view) {
 
 // ───────────── arranque ─────────────
 (async () => {
-  try { await api('/me'); await showApp(); } catch { showLogin(); }
+  try { const me = await api('/me'); if (me.user) await showApp(); else showLogin(); } catch { showLogin(); }
 })();
