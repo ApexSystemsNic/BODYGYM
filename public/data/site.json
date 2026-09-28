@@ -1,0 +1,47 @@
+{
+  "_nota": "Configuración del sitio. Edita estos datos con la información real del gimnasio.",
+  "name": "BodyFactory Gym",
+  "whatsapp": "50589663808",
+  "instagram": "https://www.instagram.com/bodyfactorylavirgen",
+  "instagramHandle": "@bodyfactorylavirgen",
+  "address": "Body Factory Gym, Montoya, Managua, Nicaragua",
+  "mapEmbed": "https://www.google.com/maps?q=Body+Factory+Gym+Montoya,+Managua,+Nicaragua&output=embed",
+  "mapLink": "https://www.google.com/maps/search/?api=1&query=Body+Factory+Gym+Montoya,+Managua,+Nicaragua",
+  "hours": [
+    {
+      "days": "Lunes a viernes",
+      "time": "5:00 am – 9:00 pm"
+    },
+    {
+      "days": "Sábado",
+      "time": "6:00 am – 5:00 pm"
+    },
+    {
+      "days": "Domingo",
+      "time": "8:00 am – 12:00 m"
+    }
+  ],
+  "delivery": "Delivery gratis en Managua",
+  "faq": [
+    {
+      "q": "¿Cómo hago mi pedido?",
+      "a": "Agrega productos al carrito y pulsa «Enviar pedido por WhatsApp». Te responderemos para confirmar disponibilidad y pago."
+    },
+    {
+      "q": "¿Hacen entregas?",
+      "a": "Sí, delivery gratis en Managua. Para otros departamentos coordinamos el envío por WhatsApp."
+    },
+    {
+      "q": "¿Qué es el precio mayorista?",
+      "a": "Es el precio especial para compras al por mayor y entrenadores. Actívalo con el botón «Mayorista»; confirmaremos que apliques por WhatsApp."
+    },
+    {
+      "q": "¿Los productos son originales?",
+      "a": "Sí. Trabajamos con marcas selladas y con fecha de vencimiento visible."
+    },
+    {
+      "q": "¿Puedo retirar en el gimnasio?",
+      "a": "Claro, pasa por el gimnasio en nuestro horario de atención."
+    }
+  ]
+}

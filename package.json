@@ -1,0 +1,20 @@
+{
+  "name": "bodyfactory-gym-catalogo",
+  "version": "1.0.0",
+  "description": "Catálogo de suplementos BodyFactory Gym: sitio público, API y panel de administración",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/server.js",
+    "check": "node --check server/server.js && node --check server/pages.js && node --check server/db.js && node --check public/js/app.js && node --check public/admin/admin.js && node --check public/sw.js",
+    "images": "node scripts/optimize-images.mjs",
+    "backup:db": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/backup-db.mjs",
+    "export:catalog": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/export-catalog.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.4"
+  }
+}

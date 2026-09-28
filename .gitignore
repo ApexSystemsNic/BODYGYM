@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Environment (only .env.example is versioned)
+.env
+.env.*
+!.env.example
+
+# Runtime data: the real SQLite database is provisioned outside Git
+# (root folder only: public/data/site.json is part of the application)
+/data/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Backups and private material
+backups/
+documentos-cliente/
+img-src/
+
+# Logs, caches and test output
+*.log
+logs/
+.cache/
+tmp/
+temp/
+coverage/
+test-results/
+playwright-report/
+*.tmp
+*.bak
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local assistant/tooling configuration
+.claude/
+CLAUDE.md

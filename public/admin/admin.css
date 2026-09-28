@@ -1,0 +1,76 @@
+.login { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+[hidden] { display: none !important; }
+.login form { width: min(380px, 100%); gap: 14px; }
+.login label, .form label { display: grid; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.err { color: var(--bad); margin: 0; min-height: 1.2em; font-size: .9rem; }
+#view { padding-block: 22px 60px; }
+#view h2 { margin-bottom: 4px; }
+.bar { display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin: 10px 0 14px; }
+.prod-search { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 6px 0 14px; }
+.prod-search input[type=search] { flex: 1 1 260px; min-width: 200px; }
+.prod-search .page-size { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+.prod-search .page-size select { width: 80px; height: 38px; }
+.tbl { width: 100%; min-width: 860px; }
+.tbl input.field, .tbl select.field { height: 38px; padding: 0 8px; }
+.tbl input[type=number] { width: 92px; }
+.tbl .thumb { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; background: #000; }
+.tbl tr.off td { opacity: .5; }
+.tbl tr.dirty td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+.tbl .acts { display: flex; gap: 6px; }
+.acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.rev-item { align-items: flex-start; }
+.row-status { display: inline-block; margin-top: 4px; font-size: .72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.row-status.pending { background: rgba(255, 176, 32, .18); color: var(--warn); }
+.row-status.saving { background: rgba(160, 161, 170, .18); color: var(--muted); }
+.row-status.ok { background: rgba(47, 210, 122, .18); color: var(--ok); }
+.row-status.bad { background: rgba(255, 93, 93, .18); color: var(--bad); }
+#revBadge { color: var(--warn); font-weight: 800; margin-left: 4px; }
+.bulk-actions { display: flex; flex-direction: column; gap: 10px; margin: 0 0 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: .85rem; }
+.bulk-actions-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; color: var(--muted); }
+.bulk-selectall { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.bulk-selectall input { width: 18px; height: 18px; }
+.bulk-actions-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.bulk-sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 2px; }
+.tbl thead th:first-child, .tbl tbody td:first-child { width: 30px; text-align: center; }
+.tbl input.rowSelect, #selectAllRows { width: 18px; height: 18px; }
+.bulk-list { max-height: 240px; overflow: auto; margin: 0 0 12px; padding-left: 18px; color: var(--text); }
+.bulk-list li { margin-bottom: 4px; }
+.form { display: grid; gap: 14px; padding: 20px; }
+.form .cols { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.form textarea.field { height: 90px; padding: 10px 12px; resize: vertical; }
+.form fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.form legend { padding: 0 8px; font-size: .78rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 800; }
+.form .checks { display: flex; gap: 14px; flex-wrap: wrap; }
+.form .checks label { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--text); }
+.form .checks input { width: 20px; height: 20px; }
+.imgrow { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.imgrow img { width: 88px; height: 88px; object-fit: contain; border-radius: 8px; background: #000; }
+.order { padding: 14px 16px; border-radius: var(--radius); background: var(--surface); margin-bottom: 12px; display: grid; gap: 6px; }
+.order header { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+.order ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: .9rem; }
+.st { padding: 3px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; background: var(--bg); }
+.rev-form { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); align-items: end; margin-bottom: 18px; }
+.rev-form label { display: grid; gap: 6px; font-size: .82rem; color: var(--muted); font-weight: 700; }
+.rev-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 10px; background: var(--surface); margin-bottom: 8px; }
+.narrow { max-width: 420px; display: grid; gap: 12px; }
+.narrow label { display: grid; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+
+/* ── Cierre visual admin ── */
+#tabs .chip { font-size: .96rem; font-weight: 850; padding: 10px 17px; }
+.order { padding: 17px 18px; border: 1px solid var(--line); }
+.order header { gap: 14px; }
+.order-title { display: grid; gap: 3px; }
+.order-title > strong { font-size: 1.05rem; }
+.order-controls { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+.order-status { width: auto; min-width: 148px; height: 44px !important; font-size: 1rem !important; font-weight: 850; text-transform: capitalize; border-width: 2px; }
+.order-status { letter-spacing: .04em; padding-inline: 14px; }
+.order-status.status-nuevo { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 16%, var(--field)); color: #ffe27a; }
+.order-status.status-confirmado { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 16%, var(--field)); color: #8ff0bb; }
+.order-status.status-entregado { border-color: #65b9ff; background: color-mix(in srgb, #65b9ff 16%, var(--field)); color: #b5dcff; }
+.order-status.status-cancelado { border-color: var(--red); background: color-mix(in srgb, var(--red) 18%, var(--field)); color: #ff9c9c; }
+.order-status option { background: var(--surface); color: var(--text); }
+.order-delete { min-height: 44px; font-size: .92rem; }
+.order-delete-form { display: grid; gap: 14px; }
+.order-delete-form label { display: grid; gap: 6px; font-weight: 800; }
+.bulk-selected-count { font-weight: 750; }
+@media (max-width: 620px) { .order-controls, .order-status, .order-delete { width: 100%; } }

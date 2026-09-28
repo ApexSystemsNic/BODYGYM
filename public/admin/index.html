@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#16171a">
+  <title>Administración | BodyFactory Gym</title>
+  <link rel="stylesheet" href="/css/styles.css?v=__BUILD__">
+  <link rel="stylesheet" href="/admin/admin.css?v=__BUILD__">
+  <script type="module" src="/admin/admin.js?v=__BUILD__"></script>
+</head>
+<body>
+  <section id="login" class="login" hidden>
+    <form id="loginForm" class="panel" autocomplete="on">
+      <h1>Administración</h1>
+      <p class="muted" style="margin:0">BodyFactory Gym</p>
+      <label>Usuario<input class="field" name="username" autocomplete="username" required></label>
+      <label>Contraseña<input class="field" name="password" type="password" autocomplete="current-password" required></label>
+      <p id="loginErr" class="err" role="alert"></p>
+      <button class="btn block" type="submit">Entrar</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <header class="topbar">
+      <div class="wrap topbar-in">
+        <span class="brand-name">Admin<small>BodyFactory Gym</small></span>
+        <nav class="chips" id="tabs" aria-label="Secciones">
+          <button type="button" class="chip" data-tab="products" aria-pressed="true">Productos</button>
+          <button type="button" class="chip" data-tab="orders" aria-pressed="false">Pedidos</button>
+          <button type="button" class="chip" data-tab="reviews" aria-pressed="false">Reseñas<span id="revBadge"></span></button>
+          <button type="button" class="chip" data-tab="account" aria-pressed="false">Cuenta</button>
+        </nav>
+        <a class="btn metal small" href="/" target="_blank" rel="noopener">Ver tienda</a>
+      </div>
+    </header>
+    <main class="wrap" id="view"></main>
+  </div>
+
+  <dialog id="formDlg" class="sheet" aria-label="Producto"></dialog>
+  <dialog id="bulkDlg" class="sheet" aria-label="Confirmar acción masiva"></dialog>
+  <dialog id="orderDeleteDlg" class="sheet" aria-label="Eliminar pedido"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

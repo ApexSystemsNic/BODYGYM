@@ -1,0 +1,2363 @@
+{
+  "products": [
+    {
+      "id": "1-m-r-vortex",
+      "name": "1 M.R VORTEX",
+      "brand": "BPI",
+      "category": "Pre-entreno",
+      "presentation": "150 g (5.3 oz) · 50 porciones",
+      "flavors": [
+        "Blue Raz"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 100,
+      "servings": 50,
+      "serving_size": "1 scoop (3 g)",
+      "image": "img/products/1-m-r-vortex",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "Pre-entreno diseñado para mejorar el rendimiento con más fuerza, enfoque y energía."
+        },
+        {
+          "icon": "check",
+          "text": "Apoya la resistencia y el rendimiento durante el entrenamiento."
+        },
+        {
+          "icon": "scoop",
+          "text": "Aporta 20 mg de niacina por porción."
+        }
+      ],
+      "usage": "Mezclar 1 scoop (3 g) en 6-8 oz (180-240 ml) de agua fría y tomar unos 15-30 minutos antes de entrenar.",
+      "warnings": [
+        "Contiene cafeína: la porción recomendada aporta aproximadamente tanta cafeína como dos tazas de café; no combinar con otros productos con cafeína.",
+        "Contiene niacina, que puede causar enrojecimiento, hormigueo y sensación de calor temporales, especialmente en ayunas.",
+        "No apto para menores de 18 años.",
+        "Suspender su uso dos semanas antes de una cirugía."
+      ],
+      "description": "Pre-entreno en polvo de BPI Sports con cafeína y niacina, sabor Blue Raz, en envase de 50 porciones.",
+      "active": true
+    },
+    {
+      "id": "100-nutrex-5lbs",
+      "name": "100% NUTREX 5LBS",
+      "brand": "NUTREX",
+      "category": "Proteínas",
+      "presentation": "5 lb (2,272 g) · 64 porciones",
+      "flavors": [
+        "Chocolate"
+      ],
+      "price_retail": 75,
+      "price_wholesale": 70,
+      "stock": 0,
+      "servings": 64,
+      "serving_size": "1 scoop (aprox. 35,5 g)",
+      "image": "img/products/100-nutrex-5lbs",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "24 g de proteína por porción (mezcla de concentrado y aislado de suero)."
+        },
+        {
+          "icon": "check",
+          "text": "Aporta aminoácidos esenciales y BCAA."
+        },
+        {
+          "icon": "check",
+          "text": "Instantizado con lecitina de girasol para una mezcla sin grumos."
+        }
+      ],
+      "usage": "Mezcla 1 scoop en 6–8 oz (≈180–240 ml) de agua, leche u otra bebida de tu preferencia. Consúmelo 30 minutos después de entrenar o en cualquier momento del día.",
+      "warnings": [
+        "No usar como única fuente de nutrición.",
+        "Consulta a un profesional de la salud antes de usarlo si estás embarazada, en lactancia, eres menor de 18 años o tienes alguna condición médica.",
+        "Contiene leche y soya."
+      ],
+      "description": "Proteína de suero Nutrex 100% Whey sabor chocolate, presentación de 5 lb (2.272 g) con 64 porciones.",
+      "active": true
+    },
+    {
+      "id": "100-whey-animal-4lbs",
+      "name": "100% WHEY ANIMAL 4LBS",
+      "brand": "ANIMAL",
+      "category": "Proteínas",
+      "presentation": "4 lb",
+      "flavors": [
+        "Chocolate"
+      ],
+      "price_retail": 75,
+      "price_wholesale": 70,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 scoop (30 g)",
+      "image": "img/products/100-whey-animal-4lbs",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": 20,
+        "carbs": null,
+        "sugar": 1,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "BCAA",
+            "amount": "4.6 g"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "20 g de proteína por porción"
+        },
+        {
+          "icon": "drop",
+          "text": "4.6 g de BCAA naturales por porción"
+        },
+        {
+          "icon": "check",
+          "text": "Sin gluten y sin colorantes artificiales (según el fabricante)"
+        }
+      ],
+      "usage": "Mezcla 1 scoop de Animal 100% Whey Protein con 4–6 onzas (120–180 ml) de leche descremada o la bebida de tu preferencia. Para mejores resultados, usa una licuadora o un shaker.",
+      "warnings": [
+        "No apto para menores de 18 años.",
+        "Consulta a un médico antes de usar este producto.",
+        "Los atletas deben consultar con su organismo regulador deportivo antes de usarlo.",
+        "Contiene leche y soya. Fabricado en instalaciones que procesan leche, soya, huevo, maní, nueces, pescado, mariscos y trigo."
+      ],
+      "description": "Proteína de suero de la línea Animal de Universal Nutrition, elaborada con una mezcla de concentrado y aislado de suero. Aporta 20 g de proteína y 4.6 g de BCAA por porción, sin gluten y sin colorantes artificiales según el fabricante.",
+      "active": true
+    },
+    {
+      "id": "100-whey-animal-isolatec",
+      "name": "100% WHEY ANIMAL ISOLATEC",
+      "brand": "ANIMAL",
+      "category": "Proteínas",
+      "presentation": "4 lb (1.81 kg) · 55 porciones",
+      "flavors": [
+        "Vanilla"
+      ],
+      "price_retail": 90,
+      "price_wholesale": 85,
+      "stock": 0,
+      "servings": 55,
+      "serving_size": "1 scoop (33 g)",
+      "image": "img/products/100-whey-animal-isolatec",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": 25,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "BCAA",
+            "amount": "5.6 g"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "25 g de proteína por porción"
+        },
+        {
+          "icon": "drop",
+          "text": "5.6 g de BCAA por porción"
+        }
+      ],
+      "usage": "Mezcla 1 scoop con 4–6 onzas (120–180 ml) de leche descremada o la bebida de tu preferencia; para mejores resultados usa licuadora o shaker. En días de entrenamiento, toma 2 o más porciones después de entrenar o cuando necesites más proteína.",
+      "warnings": [
+        "No apto para menores de 18 años.",
+        "Consulta a un médico antes de usar este producto.",
+        "Los atletas deben consultar con su organismo regulador deportivo antes de usarlo."
+      ],
+      "description": "Proteína de suero cargada con aislado, sabor vainilla, con 25 g de proteína y 5.6 g de BCAA por porción.",
+      "active": true
+    },
+    {
+      "id": "anabol-harcore",
+      "name": "ANABOL HARDCORE",
+      "brand": "NUTREX",
+      "category": "Soporte hormonal",
+      "presentation": "60 cápsulas líquidas",
+      "flavors": [],
+      "price_retail": 30,
+      "price_wholesale": 25,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 cápsula líquida",
+      "image": "img/products/anabol-harcore",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "scoop",
+          "text": "160 mg de Anabol™ Anabolic Activator por porción (dicyclopentanone y cuatro ésteres de 6-keto-diosgenina)."
+        },
+        {
+          "icon": "muscle",
+          "text": "Apoya la síntesis de proteína y el desarrollo de masa muscular magra."
+        },
+        {
+          "icon": "drop",
+          "text": "Cápsulas líquidas de rápida absorción."
+        }
+      ],
+      "usage": "Toma 1 cápsula líquida en la mañana y 1 en la noche. Para mejores resultados, úsalo diariamente en ciclos de 12 semanas de uso y 4 semanas de descanso.",
+      "warnings": [
+        "No usar si estás embarazada, en lactancia o eres menor de 18 años.",
+        "Consulta a un médico antes de usarlo si tienes alguna condición médica o tomas medicamentos.",
+        "Contiene ingredientes que pueden estar prohibidos por algunas organizaciones deportivas.",
+        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños."
+      ],
+      "description": "Anabol Hardcore de Nutrex, activador anabólico en frasco de 60 cápsulas líquidas.",
+      "active": true
+    },
+    {
+      "id": "aniaml-sterol",
+      "name": "NATURAL STEROL COMPLEX",
+      "brand": "UNIVERSAL",
+      "category": "Soporte hormonal",
+      "presentation": "180 tabletas",
+      "flavors": [],
+      "price_retail": 25,
+      "price_wholesale": 25,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "3 a 6 tabletas (el panel de datos corresponde a 6 tabletas)",
+      "image": "img/products/aniaml-sterol",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "check",
+          "text": "Esteroles vegetales avanzados y ultraconcentrados (2,000 mg de fitoesteroles por 6 tabletas)."
+        },
+        {
+          "icon": "check",
+          "text": "Enriquecido con ácidos grasos esenciales (EFA)."
+        },
+        {
+          "icon": "check",
+          "text": "Contiene antioxidantes potentes."
+        }
+      ],
+      "usage": "Toma de 3 a 6 tabletas con cualquier comida o media hora antes de entrenar, con abundante agua.",
+      "warnings": [
+        "No apto para menores de 18 años.",
+        "Consulta a un médico antes de usar este producto.",
+        "Los atletas deben consultar con su organismo regulador deportivo antes de usarlo.",
+        "Contiene trigo y soya. Fabricado en instalaciones que procesan leche, soya, huevo, maní, nueces, pescado, mariscos y trigo."
+      ],
+      "description": "Suplemento en tabletas a base de esteroles vegetales concentrados, enriquecido con ácidos grasos esenciales y antioxidantes.",
+      "active": true
+    },
+    {
+      "id": "animal-beff-amino",
+      "name": "ANIMAL BEEF AMINO",
+      "brand": "UNIVERSAL",
+      "category": "Aminoácidos",
+      "presentation": "",
+      "flavors": [],
+      "price_retail": 30,
+      "price_wholesale": 25,
+      "stock": 0,
+      "servings": 0,
+      "serving_size": "",
+      "image": "",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "Aminoácidos derivados de aislado de proteína de res de alta calidad y de hígado de res argentino desecado."
+        },
+        {
+          "icon": "check",
+          "text": "Espectro completo de aminoácidos esenciales (EAA), incluidos los BCAA."
+        },
+        {
+          "icon": "muscle",
+          "text": "1 g de proteína por tableta; fórmula de liberación sostenida."
+        }
+      ],
+      "usage": "Toma 3 tabletas con cada comida para obtener proteína de res adicional, o entre comidas para aportar un flujo constante de aminoácidos de calidad. La ingesta puede aumentarse gradualmente a 6–9 tabletas por toma.",
+      "warnings": [
+        "No apto para menores de 18 años.",
+        "Consulta a un médico antes de usar este producto.",
+        "Los atletas deben consultar con su organismo regulador deportivo antes de usarlo.",
+        "Fabricado en instalaciones que procesan leche, soya, huevo, maní, nueces, pescado, mariscos y trigo."
+      ],
+      "description": "Tabletas de aminoácidos de res elaboradas a partir de aislado de proteína de res, con 3 g de proteína por porción de 3 tabletas.",
+      "active": true
+    },
+    {
+      "id": "animal-cuts",
+      "name": "ANIMAL CUTS",
+      "brand": "UNIVERSAL",
+      "category": "Quemadores de grasa",
+      "presentation": "42 packs",
+      "flavors": [],
+      "price_retail": 45,
+      "price_wholesale": 40,
+      "stock": 0,
+      "servings": 42,
+      "serving_size": "1 pack",
+      "image": "img/products/animal-cuts",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "fire",
+          "text": "Apoyo termogénico y metabólico (según el fabricante)"
+        },
+        {
+          "icon": "check",
+          "text": "Ayuda al control del apetito (según el fabricante)"
+        }
+      ],
+      "usage": "Toma 2 packs al día durante 3 semanas seguidas: 1 al despertar y el otro 4–6 horas después, con una comida ligera y manteniéndote bien hidratado. Sigue un ciclo de 3 semanas de uso y 1 semana de descanso.",
+      "warnings": [
+        "Contiene cafeína."
+      ],
+      "description": "Quemador de grasa en packs de la línea Animal. Según el fabricante combina 17 ingredientes en complejos termogénico, metabólico, nootrópico, diurético y de control del apetito, con L-carnitina, tirosina, colina, cafeína y extracto de té verde.",
+      "active": true
+    },
+    {
+      "id": "animal-flex",
+      "name": "ANIMAL FLEX",
+      "brand": "UNIVERSAL",
+      "category": "Soporte articular",
+      "presentation": "44 packs",
+      "flavors": [],
+      "price_retail": 45,
+      "price_wholesale": 40,
+      "stock": 0,
+      "servings": 44,
+      "serving_size": "1 pack",
+      "image": "img/products/animal-flex",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "check",
+          "text": "Apoyo a articulaciones, cartílago y tejido conectivo (según el fabricante)"
+        },
+        {
+          "icon": "leaf",
+          "text": "Con cúrcuma, boswellia y jengibre"
+        }
+      ],
+      "usage": "Tomar un pack de Animal Flex al día.",
+      "warnings": [
+        "Contiene mariscos y crustáceos; no apto para vegetarianos.",
+        "No certificado como libre de gluten."
+      ],
+      "description": "Fórmula para articulaciones de la línea Animal en packs diarios. Reúne glucosamina, condroitina y MSM, lubricantes articulares (ácido hialurónico, CMO y aceite de linaza), cúrcuma, boswellia y jengibre, además de vitaminas C y E, zinc, selenio y manganeso.",
+      "active": true
+    },
+    {
+      "id": "animal-omega",
+      "name": "ANIMAL OMEGA",
+      "brand": "ANIMAL",
+      "category": "Omega-3",
+      "presentation": "30 packs",
+      "flavors": [],
+      "price_retail": 45,
+      "price_wholesale": 40,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 pack",
+      "image": "img/products/animal-omega",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "Omega-3 total",
+            "amount": "más de 2,100 mg"
+          },
+          {
+            "name": "Ácidos grasos totales",
+            "amount": "6 g"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "drop",
+          "text": "Más de 2,100 mg de omega-3 por pack"
+        },
+        {
+          "icon": "check",
+          "text": "Cápsulas con recubrimiento entérico para reducir el regusto a pescado (según el fabricante)"
+        }
+      ],
+      "usage": "Toma un pack de Animal Omega a la vez; puedes tomar hasta dos al día, según lo necesites.",
+      "warnings": [
+        "Consulta a tu médico antes de usarlo si estás embarazada o lactando, tienes una condición médica, tomas medicamentos (incluidos anticoagulantes como warfarina/Coumadin) o tienes planeado un procedimiento médico o quirúrgico.",
+        "No apto para menores de 18 años. Mantener fuera del alcance de los niños.",
+        "Contiene pescado y soya."
+      ],
+      "description": "Complejo de ácidos grasos esenciales en packs de la línea Animal. Aporta más de 2,100 mg de omega-3 y 6 g de ácidos grasos por porción, de 7 fuentes (EPA, DHA, CLA, ALA y GLA), en cápsulas blandas con recubrimiento entérico.",
+      "active": true
+    },
+    {
+      "id": "animal-pac",
+      "name": "ANIMAL PAK",
+      "brand": "ANIMAL",
+      "category": "Multivitamínico",
+      "presentation": "44 packs",
+      "flavors": [],
+      "price_retail": 45,
+      "price_wholesale": 40,
+      "stock": 0,
+      "servings": 22,
+      "serving_size": "2 packs",
+      "image": "img/products/animal-pac",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "check",
+          "text": "Multivitamínico todo en uno con más de 85 nutrientes: vitaminas, minerales, aminoácidos, enzimas y antioxidantes."
+        },
+        {
+          "icon": "bolt",
+          "text": "Apoya la energía celular, la salud inmunológica, el metabolismo y la función hepática saludable."
+        },
+        {
+          "icon": "bolt",
+          "text": "Energía y enfoque naturales, sin cafeína añadida; no requiere ciclos."
+        }
+      ],
+      "usage": "Toma 1 a 2 packs al día con el desayuno o cualquier otra comida, con abundante agua. Para quienes compiten o entrenan con mayor intensidad se sugieren dos packs.",
+      "warnings": [
+        "No apto para menores de 18 años.",
+        "Consulta a tu médico antes de usarlo si estás embarazada o lactando, tienes una condición médica o tomas medicamentos (incluidos anticoagulantes como warfarina/Coumadin), o antes de una cirugía o un examen de laboratorio (la biotina puede alterar los resultados).",
+        "Mantener fuera del alcance de los niños.",
+        "Contiene leche y soya."
+      ],
+      "description": "Multivitamínico deportivo en packs diarios con más de 85 ingredientes para la nutrición base del atleta.",
+      "active": true
+    },
+    {
+      "id": "animal-primal",
+      "name": "ANIMAL PRIMAL",
+      "brand": "ANIMAL",
+      "category": "Pre-entreno",
+      "presentation": "Polvo · 25 porciones",
+      "flavors": [
+        "Candy Crush'd"
+      ],
+      "price_retail": 40,
+      "price_wholesale": 25,
+      "stock": 0,
+      "servings": 25,
+      "serving_size": "2 scoops redondeados",
+      "image": "img/products/animal-primal",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "Cafeína anhidra",
+            "amount": "300 mg"
+          },
+          {
+            "name": "Beta-alanina",
+            "amount": "3,200 mg"
+          },
+          {
+            "name": "Betaína anhidra",
+            "amount": "2,500 mg"
+          },
+          {
+            "name": "L-tirosina",
+            "amount": "1,000 mg"
+          },
+          {
+            "name": "Taurina",
+            "amount": "1,000 mg"
+          },
+          {
+            "name": "TeaCrine®",
+            "amount": "50 mg"
+          },
+          {
+            "name": "AstraGin®",
+            "amount": "25 mg"
+          },
+          {
+            "name": "Senactiv®",
+            "amount": "25 mg"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "Energía y enfoque para entrenar (según el fabricante)"
+        },
+        {
+          "icon": "muscle",
+          "text": "Apoyo al bombeo muscular y la resistencia (según el fabricante)"
+        }
+      ],
+      "usage": "Mezclar 2 scoops redondeados en 10–12 oz de bebida, 30 minutos antes de entrenar. Por su potencia, empezar con 1 scoop y subir a 2.",
+      "warnings": [
+        "Contiene 300 mg de cafeína por porción.",
+        "No consumir más de una porción en 24 horas ni dentro de las 6–8 horas previas a dormir."
+      ],
+      "description": "Pre-entreno en polvo de la línea Animal. Por porción aporta 300 mg de cafeína, 50 mg de TeaCrine®, 3.2 g de beta-alanina, 2.5 g de betaína, 1 g de L-tirosina y 1 g de taurina.",
+      "active": true
+    },
+    {
+      "id": "animal-pump",
+      "name": "ANIMAL PUMP",
+      "brand": "UNIVERSAL",
+      "category": "Pre-entreno",
+      "presentation": "30 packs",
+      "flavors": [],
+      "price_retail": 45,
+      "price_wholesale": 40,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 pack (9 cápsulas)",
+      "image": "img/products/animal-pump",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "Cafeína (cápsula roja)",
+            "amount": "200 mg"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "Apoyo al bombeo muscular (según el fabricante)"
+        },
+        {
+          "icon": "bolt",
+          "text": "Estimulante removible: 200 mg de cafeína en la cápsula roja"
+        }
+      ],
+      "usage": "Como suplemento preentreno base, toma un pack 30–45 minutos antes de entrenar, preferiblemente con el estómago vacío.",
+      "warnings": [
+        "La cápsula roja contiene 200 mg de cafeína."
+      ],
+      "description": "Pre-entreno en cápsulas de la línea Animal, en packs. Combina creatina, un complejo de óxido nítrico, antioxidantes y una cápsula roja estimulante con 200 mg de cafeína que se puede retirar.",
+      "active": true
+    },
+    {
+      "id": "animal-stak",
+      "name": "ANIMAL STAK",
+      "brand": "UNIVERSAL",
+      "category": "Soporte hormonal",
+      "presentation": "21 packs",
+      "flavors": [],
+      "price_retail": 45,
+      "price_wholesale": 40,
+      "stock": 0,
+      "servings": 21,
+      "serving_size": "1 pack",
+      "image": "img/products/animal-stak",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "check",
+          "text": "Ciclo de 21 días en packs diarios"
+        },
+        {
+          "icon": "muscle",
+          "text": "Cinco complejos en una sola porción"
+        }
+      ],
+      "usage": "Un pack al día durante 21 días seguidos: en días de entrenamiento, 30–45 minutos antes; en días de descanso, antes de dormir. Ciclos de 3 semanas de uso y 1 de descanso; tras 3 ciclos, descansar un mes.",
+      "warnings": [
+        "No apto para menores de 18 años.",
+        "No usar durante el embarazo o la lactancia, ni si tienes una condición médica grave. Consulta a un médico antes de usarlo.",
+        "Su uso puede estar prohibido por algunas asociaciones deportivas.",
+        "Contiene soya."
+      ],
+      "description": "Complejo en packs de la línea Animal para un ciclo de 3 semanas. Incluye cinco complejos: pro-testosterona con Tribulus terrestris; aromatasa con resveratrol y DIM; soporte de hormona de crecimiento; amplificador hormonal con carnitina y agmatina; y soporte con cardo mariano, ashwagandha y CoQ10.",
+      "active": true
+    },
+    {
+      "id": "animal-test",
+      "name": "ANIMAL TEST",
+      "brand": "UNIVERSAL",
+      "category": "Soporte hormonal",
+      "presentation": "21 packs",
+      "flavors": [],
+      "price_retail": 65,
+      "price_wholesale": 60,
+      "stock": 0,
+      "servings": 21,
+      "serving_size": "1 pack",
+      "image": "img/products/animal-test",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "leaf",
+          "text": "Incluye ashwagandha KSM-66®"
+        },
+        {
+          "icon": "check",
+          "text": "Ciclo de 21 días en packs diarios"
+        }
+      ],
+      "usage": "Un pack al día durante 21 días seguidos: en días de entrenamiento, 30 minutos antes; en días de descanso, con cualquier comida.",
+      "warnings": [
+        "No lo tomes si tienes o estás en riesgo de una condición médica como diabetes, asma, presión alta, colesterol alto, artritis, enfermedad cardíaca o accidente cerebrovascular.",
+        "No usar durante el embarazo, si padeces enfermedades inflamatorias o si sigues una dieta con restricción de carne roja."
+      ],
+      "description": "Fórmula en packs de la línea Animal para apoyar la testosterona natural, con ashwagandha KSM-66® y complejos de rendimiento y bienestar. Envase para un ciclo de 3 semanas.",
+      "active": true
+    },
+    {
+      "id": "animal-tnt",
+      "name": "ANIMAL TNT",
+      "brand": "UNIVERSAL",
+      "category": "Soporte hormonal",
+      "presentation": "30 packs (6 cápsulas por pack)",
+      "flavors": [],
+      "price_retail": 65,
+      "price_wholesale": 60,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 pack",
+      "image": "img/products/animal-tnt",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "Apoyo a la testosterona libre (según el fabricante)"
+        },
+        {
+          "icon": "check",
+          "text": "Un pack al día"
+        }
+      ],
+      "usage": "Tomar 1 pack con el desayuno u otra comida, junto con un programa de entrenamiento de fuerza.",
+      "warnings": [
+        "No exceder 1 pack al día."
+      ],
+      "description": "Fórmula en packs de la línea Animal para apoyar la testosterona libre, pensada para acompañar un programa de entrenamiento de fuerza.",
+      "active": true
+    },
+    {
+      "id": "animal-whey-4lb",
+      "name": "100% Whey Protein",
+      "brand": "Animal",
+      "category": "Proteínas",
+      "presentation": "4 lb (1.81 kg)",
+      "flavors": [
+        "Chocolate"
+      ],
+      "price_retail": 62,
+      "price_wholesale": 55,
+      "stock": 0,
+      "servings": 50,
+      "serving_size": "1 scoop",
+      "image": "img/products/animal-whey-4lb",
+      "badges": [
+        "sin-gluten",
+        "sin-azucar"
+      ],
+      "tag": "",
+      "popularity": 85,
+      "macros": {
+        "calories": 0,
+        "protein": 20,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "20 g de proteína whey por porción"
+        },
+        {
+          "icon": "drop",
+          "text": "4.6 g de BCAA, 0 g de azúcar añadida"
+        },
+        {
+          "icon": "check",
+          "text": "Sin gluten y sin colorantes artificiales"
+        }
+      ],
+      "usage": "Mezcla 1 scoop en agua o leche, después de entrenar o entre comidas. Revisa la etiqueta del envase para la dosis exacta.",
+      "warnings": [
+        "Solo para mayores de 18 años.",
+        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
+        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
+        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
+      ],
+      "description": "Proteína whey en polvo, sabor chocolate.",
+      "active": true
+    },
+    {
+      "id": "best-amino-bpi",
+      "name": "BEST AMINO BPI",
+      "brand": "BPI",
+      "category": "Aminoácidos",
+      "presentation": "Polvo · 25 porciones",
+      "flavors": [
+        "Fruit Punch"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 25,
+      "serving_size": "1 scoop (10 g)",
+      "image": "img/products/best-amino-bpi",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "Leucine Support Matrix",
+            "amount": "2.5 g"
+          },
+          {
+            "name": "Isoleucine Muscle Matrix",
+            "amount": "1.25 g"
+          },
+          {
+            "name": "Valine Recovery Matrix",
+            "amount": "1.25 g"
+          },
+          {
+            "name": "Glutamine Support Matrix",
+            "amount": "1 g"
+          },
+          {
+            "name": "Omega 6 Fatty Acids & CLA Matrix",
+            "amount": "1 g"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "Apoyo a la recuperación después del entrenamiento (según el fabricante)"
+        },
+        {
+          "icon": "drop",
+          "text": "Incluye una matriz de glutamina (1 g por porción)"
+        }
+      ],
+      "usage": "Mezclar 1 scoop en 6–8 oz de agua. Tomar antes, durante o después del entrenamiento.",
+      "warnings": [
+        "Contiene coco (fruto de cáscara).",
+        "Elaborado en instalaciones que procesan soya, pescado, mariscos, leche, maní, frutos de cáscara, trigo y huevo."
+      ],
+      "description": "Aminoácidos BCAA en polvo de BPI Sports. Por porción incluye Leucine Support Matrix (2.5 g), Isoleucine Muscle Matrix (1.25 g), Valine Recovery Matrix (1.25 g), Glutamine Support Matrix (1 g) y Omega 6 Fatty Acids & CLA Matrix (1 g), según el fabricante.",
+      "active": true
+    },
+    {
+      "id": "bulk-muscle-13lbs-bpi",
+      "name": "BULK MUSCLE 13LBS BPI",
+      "brand": "BPI",
+      "category": "Proteínas",
+      "presentation": "13 lb (5,952 g) · 48 porciones aprox.",
+      "flavors": [
+        "Chocolate"
+      ],
+      "price_retail": 65,
+      "price_wholesale": 60,
+      "stock": 0,
+      "servings": 48,
+      "serving_size": "2 scoops (124 g)",
+      "image": "img/products/bulk-muscle-13lbs-bpi",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 497,
+        "protein": 25,
+        "carbs": 88,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "25 g de proteína por porción"
+        },
+        {
+          "icon": "bolt",
+          "text": "497 calorías por porción"
+        },
+        {
+          "icon": "fire",
+          "text": "88 g de carbohidratos por porción"
+        }
+      ],
+      "usage": "Mezclar 2 scoops (124 g) en 16 oz (aprox. 475 ml) de agua bien fría una vez al día, después de entrenar o como reemplazo de comida, según tus objetivos.",
+      "warnings": [
+        "Contiene leche y soya.",
+        "Fabricado en una instalación que también procesa huevo, frutos de cáscara y trigo.",
+        "Leer toda la etiqueta antes de usar; mantener fuera del alcance de los niños."
+      ],
+      "description": "Ganador de peso en polvo de BPI Sports sabor chocolate, en bolsa de 13 lb con 48 porciones.",
+      "active": true
+    },
+    {
+      "id": "collageno-prusupps",
+      "name": "LIQUID COLLAGEN PROSUPPS",
+      "brand": "PROSUPPS",
+      "category": "Colágeno",
+      "presentation": "32 fl oz (960 ml) · 16 porciones",
+      "flavors": [
+        "Berry"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 25,
+      "stock": 0,
+      "servings": 16,
+      "serving_size": "4 cucharadas (60 ml)",
+      "image": "img/products/collageno-prusupps",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": 23,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "23 g de proteína de colágeno por porción"
+        },
+        {
+          "icon": "heart",
+          "text": "Apoyo para articulaciones, piel y cabello (según el fabricante)"
+        }
+      ],
+      "usage": "Agitar bien antes de usar y tomar 4 cucharadas (60 ml) antes de cada comida y antes y después de entrenar, o según indique un médico o nutricionista. Refrigerar después de abrir.",
+      "warnings": [
+        "Destinado a adultos sanos de 18 años o más; consultar a un médico antes de usar.",
+        "No usar si está embarazada, en período de lactancia o tomando medicamentos.",
+        "Suspender el uso si se presentan efectos adversos.",
+        "Refrigerar después de abrir."
+      ],
+      "description": "Colágeno líquido Amino23 de ProSupps sabor Berry, botella de 32 fl oz (960 ml) con 16 porciones.",
+      "active": true
+    },
+    {
+      "id": "creatina-monohidrata-30sv",
+      "name": "CREATINA MONOHIDRATA 30SV",
+      "brand": "NUTREX",
+      "category": "Creatina",
+      "presentation": "150 g · 30 porciones de 5 g",
+      "flavors": [
+        "Sin sabor"
+      ],
+      "price_retail": 10,
+      "price_wholesale": 10,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 scoop (5 g)",
+      "image": "img/products/creatina-monohidrata-30sv",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "drop",
+          "text": "5 g de creatina monohidratada micronizada por porción."
+        },
+        {
+          "icon": "check",
+          "text": "Sin sabor: se puede mezclar con cualquier bebida."
+        },
+        {
+          "icon": "muscle",
+          "text": "Apoya la fuerza y la potencia muscular."
+        }
+      ],
+      "usage": "Mezcla 1 scoop (5 g) con 8 oz (≈240 ml) de agua y consúmelo de inmediato. Toma 1–2 porciones al día; para mejores resultados, úsalo diariamente.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Mantente bien hidratado durante todo el día.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Creatina monohidratada micronizada Nutrex sin sabor, envase de 150 g con 30 porciones.",
+      "active": true
+    },
+    {
+      "id": "creatina-monohidratada-200sv",
+      "name": "CREATINA MONOHIDRATADA 200SV",
+      "brand": "NUTREX",
+      "category": "Creatina",
+      "presentation": "1,000 g · 200 porciones de 5 g",
+      "flavors": [
+        "Sin sabor"
+      ],
+      "price_retail": 38,
+      "price_wholesale": 32,
+      "stock": 0,
+      "servings": 200,
+      "serving_size": "1 scoop (5 g)",
+      "image": "img/products/creatina-monohidratada-200sv",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "5 g de creatina monohidratada micronizada por porción",
+        "Sin sabor: se mezcla con cualquier bebida"
+      ],
+      "usage": "Mezclar 1 scoop en 8 oz de agua. Tomar 1–2 porciones al día.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Mantente bien hidratado durante todo el día.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Creatina monohidratada micronizada de Nutrex Research, sin sabor, presentación de 1 kg con 200 porciones de 5 g (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "creatina-monohidratada60-sv",
+      "name": "CREATINA MONOHIDRATADA 60SV",
+      "brand": "NUTREX",
+      "category": "Creatina",
+      "presentation": "300 g · 60 porciones de 5 g",
+      "flavors": [
+        "Sin sabor"
+      ],
+      "price_retail": 18,
+      "price_wholesale": 13,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 scoop (5 g)",
+      "image": "img/products/creatina-monohidratada60-sv",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "5 g de creatina monohidratada micronizada por porción",
+        "Sin sabor: se mezcla con cualquier bebida"
+      ],
+      "usage": "Mezclar 1 scoop en 8 oz de agua. Tomar 1–2 porciones al día.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Mantente bien hidratado durante todo el día.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Creatina monohidratada micronizada de Nutrex Research, sin sabor, presentación de 300 g con 60 porciones de 5 g (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "creatina-monohridratada-80sv",
+      "name": "CREATINA MONOHIDRATADA 80SV",
+      "brand": "NUTREX",
+      "category": "Creatina",
+      "presentation": "400 g · 80 porciones de 5 g",
+      "flavors": [
+        "Sin sabor"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 18,
+      "stock": 0,
+      "servings": 80,
+      "serving_size": "1 scoop (5 g)",
+      "image": "img/products/creatina-monohridratada-80sv",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "5 g de creatina monohidratada micronizada por porción",
+        "Sin sabor: se mezcla con cualquier bebida"
+      ],
+      "usage": "Mezclar 1 scoop en 8 oz de agua. Tomar 1–2 porciones al día.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Mantente bien hidratado durante todo el día.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Creatina monohidratada micronizada de Nutrex Research, sin sabor, presentación de 400 g con 80 porciones de 5 g (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "creatina-women",
+      "name": "CREATINA WOMEN",
+      "brand": "NUTREX",
+      "category": "Creatina",
+      "presentation": "30 porciones · Pink Lemonade",
+      "flavors": [
+        "Pink Lemonade"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 scoop",
+      "image": "img/products/creatina-women",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "drop",
+          "text": "5 g de creatina monohidratada micronizada por porción."
+        },
+        {
+          "icon": "check",
+          "text": "2 g de péptidos de colágeno hidrolizado (tipo I y III), con biotina, vitamina C y ácido hialurónico."
+        },
+        {
+          "icon": "scoop",
+          "text": "1 g de BCAA en proporción 2:1:1 por porción."
+        }
+      ],
+      "usage": "Mezcla 1 scoop en 8 oz (≈240 ml) de agua. Consume 1–2 porciones al día; para mejores resultados, úsalo diariamente.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Mantente bien hidratada durante todo el día.",
+        "Fabricado en una instalación que procesa leche, huevo, pescado, mariscos, frutos secos, trigo y soya.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Creatine for Women de Nutrex, creatina con colágeno sabor Pink Lemonade, 30 porciones.",
+      "active": true
+    },
+    {
+      "id": "creatine-women",
+      "name": "Creatine for Women",
+      "brand": "Nutrex",
+      "category": "Creatina",
+      "presentation": "30 porciones",
+      "flavors": [
+        "Pink Lemonade"
+      ],
+      "price_retail": 32,
+      "price_wholesale": 27,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 scoop (5 g de creatina)",
+      "image": "img/products/creatine-women",
+      "badges": [],
+      "tag": "",
+      "popularity": 75,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "5 g de creatina por porción para rendimiento"
+        },
+        {
+          "icon": "heart",
+          "text": "Con colágeno y aminoácidos: cabello, piel y uñas"
+        },
+        {
+          "icon": "check",
+          "text": "Apoyo cognitivo y hormonal (Body & Beauty)"
+        }
+      ],
+      "usage": "Mezcla 1 scoop en agua o tu bebida favorita una vez al día. Mantente bien hidratada.",
+      "warnings": [
+        "Solo para mayores de 18 años.",
+        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
+        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
+        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
+      ],
+      "description": "Creatina + colágeno + aminoácidos, sabor Pink Lemonade.",
+      "active": true
+    },
+    {
+      "id": "eaa",
+      "name": "EAA",
+      "brand": "NUTREX",
+      "category": "Aminoácidos esenciales (EAA)",
+      "presentation": "30 porciones",
+      "flavors": [
+        "Fruit Punch"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 scoop",
+      "image": "img/products/eaa",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "8 g de EAA y 6 g de BCAA por porción",
+        "Electrolitos para la hidratación",
+        "Sin azúcar"
+      ],
+      "usage": "Mezclar un scoop con agua. Tomar durante o después del entrenamiento, o en cualquier momento del día.",
+      "warnings": [
+        "No usar si estás embarazada o en periodo de lactancia.",
+        "Si tomas medicamentos o tienes planeado un procedimiento médico, consulta a un médico antes de usarlo.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Aminoácidos esenciales con electrolitos de Nutrex Research. Aporta 8 g de los 9 EAA, incluidos 6 g de BCAA en proporción 2:1:1, además de taurina, electrolitos y AstraGin®, sin azúcar (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "glutamina-drive",
+      "name": "GLUTAMINE PURE",
+      "brand": "NUTREX",
+      "category": "Aminoácidos",
+      "presentation": "300 g · 60 porciones",
+      "flavors": [
+        "Sin sabor"
+      ],
+      "price_retail": 20,
+      "price_wholesale": 16,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 scoop (5 g)",
+      "image": "img/products/glutamina-drive",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": []
+      },
+      "benefits": [
+        {
+          "icon": "scoop",
+          "text": "5 g de L-glutamina por porción."
+        },
+        {
+          "icon": "check",
+          "text": "Sin sabor: se mezcla fácilmente con cualquier bebida o suplemento."
+        },
+        {
+          "icon": "muscle",
+          "text": "Ayuda a reponer las reservas de glutamina y apoya la recuperación muscular."
+        }
+      ],
+      "usage": "Mezcla 1 scoop con 6–8 oz (≈180–240 ml) de agua u otra bebida. Toma 2 porciones al día (una al despertar y otra antes de dormir); en días de entrenamiento, toma una porción adicional después de entrenar.",
+      "warnings": [
+        "No usar si estás embarazada o en periodo de lactancia.",
+        "Mantente bien hidratado durante todo el día.",
+        "Fabricado en equipo que procesa leche, huevo, soya, pescado y trigo.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Glutamina en polvo sin sabor de Nutrex, presentación de 300 g con 60 porciones.",
+      "active": true
+    },
+    {
+      "id": "hidro-bcaa-90sv",
+      "name": "HYDRO BCAA + ESSENTIALS",
+      "brand": "PROSUPPS",
+      "category": "Aminoácidos",
+      "presentation": "420 g · 30 porciones",
+      "flavors": [
+        "Blue Raspberry"
+      ],
+      "price_retail": 30,
+      "price_wholesale": 30,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "",
+      "image": "img/products/hidro-bcaa-90sv",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": null,
+        "protein": null,
+        "carbs": null,
+        "sugar": null,
+        "fat": null,
+        "sodium": null,
+        "items": [
+          {
+            "name": "BCAA",
+            "amount": "7 g"
+          },
+          {
+            "name": "EAA",
+            "amount": "10 g"
+          },
+          {
+            "name": "Electrolitos",
+            "amount": "150 mg"
+          }
+        ]
+      },
+      "benefits": [
+        {
+          "icon": "scoop",
+          "text": "7 g de BCAA en proporción 2:1:1 más aminoácidos esenciales (EAA) por porción."
+        },
+        {
+          "icon": "drop",
+          "text": "Aporta electrolitos para apoyar la hidratación durante el entrenamiento."
+        },
+        {
+          "icon": "bolt",
+          "text": "Sin cafeína; sin gluten y sin colorantes FD&C."
+        }
+      ],
+      "usage": "Mezclar 1 scoop en 8-10 oz (240-300 ml) de agua fría; tomar antes, durante o después del entrenamiento.",
+      "warnings": [
+        "Si está embarazada, en lactancia o tiene alguna condición médica, consulte a su médico antes de usar.",
+        "Mantener fuera del alcance de los niños.",
+        "Fabricado en una instalación que procesa leche, huevo, pescado, mariscos, frutos de cáscara, maní, trigo, sésamo y soya.",
+        "Guardar en un lugar fresco y seco, protegido del calor, la luz y la humedad."
+      ],
+      "description": "Fórmula en polvo ProSupps con BCAA, EAA y electrolitos, sabor Blue Raspberry, 420 g y 30 porciones.",
+      "active": true
+    },
+    {
+      "id": "iso-hd",
+      "name": "ISO HD",
+      "brand": "BPI Sports",
+      "category": "Proteínas",
+      "presentation": "4.8 lb (2,170 g)",
+      "flavors": [
+        "Vanilla Cookie"
+      ],
+      "price_retail": 75,
+      "price_wholesale": 66,
+      "stock": 0,
+      "servings": 70,
+      "serving_size": "1 scoop",
+      "image": "img/products/iso-hd",
+      "badges": [],
+      "tag": "new",
+      "popularity": 90,
+      "macros": {
+        "calories": 0,
+        "protein": 25,
+        "carbs": 1,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "25 g de proteína por porción, 100% aislado"
+        },
+        {
+          "icon": "bolt",
+          "text": "Absorción rápida"
+        },
+        {
+          "icon": "heart",
+          "text": "Recuperación muscular rápida, solo 1 g de carbohidratos"
+        }
+      ],
+      "usage": "Mezcla 1 scoop en agua o leche, después de entrenar o entre comidas. Revisa la etiqueta del envase para la dosis exacta.",
+      "warnings": [
+        "Solo para mayores de 18 años.",
+        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
+        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
+        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
+      ],
+      "description": "100% pure isolate protein.",
+      "active": true
+    },
+    {
+      "id": "isofit-5lb",
+      "name": "Isofit Protein",
+      "brand": "Nutrex",
+      "category": "Proteínas",
+      "presentation": "5 lb (2,261 g)",
+      "flavors": [
+        "Vanilla Bean Ice Cream"
+      ],
+      "price_retail": 79,
+      "price_wholesale": 70,
+      "stock": 0,
+      "servings": 70,
+      "serving_size": "1 scoop",
+      "image": "img/products/isofit-5lb",
+      "badges": [],
+      "tag": "best",
+      "popularity": 98,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "Aislado de suero (whey isolate) para recuperación muscular"
+        },
+        {
+          "icon": "bolt",
+          "text": "70 porciones por envase"
+        },
+        {
+          "icon": "heart",
+          "text": "Sabor postre: Vanilla Bean Ice Cream"
+        }
+      ],
+      "usage": "Mezcla 1 scoop en agua o leche, después de entrenar o entre comidas. Revisa la etiqueta del envase para la dosis exacta.",
+      "warnings": [
+        "Solo para mayores de 18 años.",
+        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
+        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
+        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
+      ],
+      "description": "Premium dessert whey isolate.",
+      "active": true
+    },
+    {
+      "id": "isofit-nutrex",
+      "name": "ISOFIT NUTREX",
+      "brand": "NUTREX",
+      "category": "Proteínas",
+      "presentation": "5 lb (2,270 g) · 70 porciones",
+      "flavors": [
+        "Strawberries & Cream"
+      ],
+      "price_retail": 90,
+      "price_wholesale": 85,
+      "stock": 0,
+      "servings": 70,
+      "serving_size": "1 scoop",
+      "image": "img/products/isofit-nutrex",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "25 g de proteína de aislado de suero (whey isolate) por porción."
+        },
+        {
+          "icon": "scoop",
+          "text": "12 g de aminoácidos esenciales (EAA) y casi 6 g de BCAA por porción."
+        },
+        {
+          "icon": "drop",
+          "text": "Bajo en grasa, carbohidratos y azúcar."
+        }
+      ],
+      "usage": "Mezcla 1 scoop con 5 oz (≈150 ml) de agua fría y tómalo inmediatamente después de entrenar; también puede tomarse en cualquier momento del día, entre comidas.",
+      "warnings": [
+        "No usar como única fuente de nutrición.",
+        "Consulta a un profesional de la salud antes de usarlo si estás embarazada, en lactancia, tienes alguna condición médica o tomas medicamentos.",
+        "Contiene leche y soya. Elaborado en una instalación que procesa maní, sésamo, frutos secos, pescado/mariscos y trigo.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Proteína aislada de suero Isofit de Nutrex sabor Strawberries & Cream, presentación de 5 lb con 70 porciones.",
+      "active": true
+    },
+    {
+      "id": "lipo-6-diuretic",
+      "name": "LIPO 6 DIURETIC",
+      "brand": "NUTREX",
+      "category": "Diurético",
+      "presentation": "80 cápsulas",
+      "flavors": [],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 0,
+      "serving_size": "4 cápsulas",
+      "image": "img/products/lipo-6-diuretic",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Ayuda a reducir el exceso de agua y la hinchazón (según el fabricante)"
+      ],
+      "usage": "Tomar 4 cápsulas dos veces al día con 8 oz de agua, en la mañana y en la tarde, durante 5 días consecutivos.",
+      "warnings": [
+        "Uso recomendado por 5 días consecutivos. Mantener una hidratación adecuada durante su uso."
+      ],
+      "description": "Fórmula diurética de Nutrex Research para reducir el exceso de agua subcutánea, con citrato de magnesio, potasio y extractos de diente de león, cola de caballo y uva ursi (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "lipo-6-gel",
+      "name": "LIPO 6 GEL",
+      "brand": "NUTREX",
+      "category": "Gel tópico reductor",
+      "presentation": "120 ml (4 fl oz)",
+      "flavors": [],
+      "price_retail": 30,
+      "price_wholesale": 25,
+      "stock": 0,
+      "servings": 0,
+      "serving_size": "2–4 pulsaciones por zona",
+      "image": "img/products/lipo-6-gel",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Aplicación localizada antes de entrenar (según el fabricante)"
+      ],
+      "usage": "Aplicar 2–4 pulsaciones sobre la piel limpia y seca de cada zona, 1–2 veces al día.",
+      "warnings": [
+        "Uso externo únicamente."
+      ],
+      "description": "Gel de uso tópico de Nutrex Research para zonas específicas, con capsaicina, yohimbina, arginina, teofilina y resveratrol. No es un suplemento oral.",
+      "active": true
+    },
+    {
+      "id": "lipo-6-hardcore",
+      "name": "LIPO 6 HARDCORE",
+      "brand": "NUTREX",
+      "category": "Quemador de grasa termogénico",
+      "presentation": "60 cápsulas",
+      "flavors": [],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 cápsula",
+      "image": "img/products/lipo-6-hardcore",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Termogénico con energía (según el fabricante)",
+        "Apoyo al control del apetito (según el fabricante)"
+      ],
+      "usage": "Tomar 1 cápsula en la mañana y 1 en la tarde. Usar a diario por al menos 30 días.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada, en lactancia o eres sensible a la cafeína. Cada porción contiene 300 mg de cafeína (≈1½–2 tazas de café fuerte).",
+        "No consumir cafeína ni otros estimulantes de otras fuentes (bebidas energéticas, café, refrescos, suplementos o medicamentos).",
+        "No usar por más de 2 meses; seguir con 1 mes de descanso. Suspender de inmediato si hay taquicardia, mareo, dolor de cabeza intenso o falta de aire.",
+        "Consulta a tu médico antes de usarlo si tomas medicamentos o tienes alguna condición médica. Suspende 2 semanas antes de una cirugía. Puede contener ingredientes prohibidos por algunas organizaciones deportivas."
+      ],
+      "description": "Quemador de grasa de Nutrex Research con Cocoabuterol®, GBBGO®, kanna y extracto de pimienta de cayena (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "lipo-6-nigthmare",
+      "name": "LIPO 6 NIGTHMARE",
+      "brand": "NUTREX",
+      "category": "Quemadores de grasa",
+      "presentation": "60 cápsulas",
+      "flavors": [],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 1,
+      "serving_size": "",
+      "image": "img/products/lipo-6-nigthmare",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "Fórmula nocturna sin cafeína con melatonina, L-teanina y 5-HTP."
+        },
+        {
+          "icon": "scoop",
+          "text": "Por porción: vitamina B6 (10 mg), selenio (100 mcg) y cromo (200 mcg), más 552 mg de complejo nocturno (EGCG de té verde, cetonas de frambuesa, forskolina)."
+        },
+        {
+          "icon": "fire",
+          "text": "Apoya la pérdida de grasa mientras duermes y la calidad del sueño."
+        }
+      ],
+      "usage": "Toma 1 cápsula 30–45 minutos antes de dormir. Para mejores resultados, úsalo diariamente.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "No consumir con alcohol, ni al conducir u operar maquinaria, ya que puede causar somnolencia.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Lipo-6 Nighttime de Nutrex, fórmula nocturna sin estimulantes, frasco de 60 cápsulas.",
+      "active": true
+    },
+    {
+      "id": "lipo-black",
+      "name": "LIPO BLACK",
+      "brand": "NUTREX",
+      "category": "Quemador de grasa termogénico",
+      "presentation": "60 cápsulas",
+      "flavors": [],
+      "price_retail": 20,
+      "price_wholesale": 18,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 cápsula líquida",
+      "image": "img/products/lipo-black",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "Fórmula termogénica ultra concentrada en una sola cápsula líquida de rápida absorción."
+        },
+        {
+          "icon": "fire",
+          "text": "Apoya el metabolismo y el control del apetito."
+        },
+        {
+          "icon": "bolt",
+          "text": "Apoya la energía y el enfoque."
+        }
+      ],
+      "usage": "Toma 1 cápsula líquida dos veces al día, en la mañana y en la tarde, entre comidas (no con alimentos). No exceder 1 cápsula por toma ni tomar dentro de las 6 horas previas a dormir; usar por periodos de 1–2 meses.",
+      "warnings": [
+        "No apto para menores de 21 años, ni durante el embarazo o la lactancia. Contiene 200 mg de cafeína por porción.",
+        "No consumir cafeína, sinefrina ni otros estimulantes de otras fuentes (café, té, refrescos, suplementos o medicamentos).",
+        "No usar por más de 2 meses; seguir con 1 mes de descanso. Suspender de inmediato si hay taquicardia, mareo, dolor de cabeza intenso o falta de aire.",
+        "Consulta a tu médico antes de usarlo si tomas medicamentos (p. ej. IMAO, antidepresivos, aspirina, antiinflamatorios o estimulantes) o si tienes alguna condición médica (cardíaca, hepática, renal, tiroidea, presión alta, diabetes, entre otras). Suspende 2 semanas antes de una cirugía. Puede contener ingredientes prohibidos por algunas organizaciones deportivas."
+      ],
+      "description": "Lipo-6 Black Ultra Concentrate de Nutrex, quemador termogénico en frasco de 60 cápsulas líquidas.",
+      "active": true
+    },
+    {
+      "id": "lipo-blacl-120-und",
+      "name": "LIPO BLACK 120 UND",
+      "brand": "NUTREX",
+      "category": "Quemador de grasa termogénico",
+      "presentation": "120 cápsulas · 20 porciones",
+      "flavors": [],
+      "price_retail": 30,
+      "price_wholesale": 28,
+      "stock": 0,
+      "servings": 20,
+      "serving_size": "6 cápsulas (3 mañana y 3 tarde)",
+      "image": "img/products/lipo-blacl-120-und",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Energía y enfoque (según el fabricante)",
+        "Apoyo al control del apetito (según el fabricante)"
+      ],
+      "usage": "Tomar 3 cápsulas en la mañana y 3 en la tarde, 30 minutos antes o una hora después de comer. No tomar dentro de las 6 horas previas a dormir.",
+      "warnings": [
+        "No apto para menores de 21 años, ni durante el embarazo o la lactancia. Contiene 200 mg de cafeína por porción.",
+        "No consumir cafeína, sinefrina ni otros estimulantes de otras fuentes (café, té, refrescos, suplementos o medicamentos).",
+        "No usar por más de 2 meses; seguir con 1 mes de descanso. Suspender de inmediato si hay taquicardia, mareo, dolor de cabeza intenso o falta de aire.",
+        "Consulta a tu médico antes de usarlo si tomas medicamentos (p. ej. IMAO, antidepresivos, aspirina, antiinflamatorios o estimulantes) o si tienes alguna condición médica (cardíaca, hepática, renal, tiroidea, presión alta, diabetes, entre otras). Suspende 2 semanas antes de una cirugía. Puede contener ingredientes prohibidos por algunas organizaciones deportivas."
+      ],
+      "description": "Quemador de grasa de Nutrex Research en cápsulas líquidas, con colina, L-tirosina, cafeína, teobromina y grains of paradise. Envase de 120 cápsulas (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "lipo-hers",
+      "name": "LIPO HERS",
+      "brand": "NUTREX",
+      "category": "Quemador de grasa termogénico",
+      "presentation": "60 cápsulas",
+      "flavors": [],
+      "price_retail": 20,
+      "price_wholesale": 18,
+      "stock": 0,
+      "servings": 60,
+      "serving_size": "1 cápsula líquida",
+      "image": "img/products/lipo-hers",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Apoyo al metabolismo y control del apetito (según el fabricante)",
+        "Complejo de cabello y belleza"
+      ],
+      "usage": "Tomar 1 cápsula en la mañana y 1 en la tarde. No exceder 1 cápsula por toma ni 2 tomas en 24 horas.",
+      "warnings": [
+        "No apto para menores de 21 años, ni durante el embarazo o la lactancia. Contiene 200 mg de cafeína por porción (≈1½ tazas de café fuerte).",
+        "No consumir cafeína, sinefrina ni otros estimulantes de otras fuentes (café, té, refrescos, suplementos o medicamentos).",
+        "No usar por más de 2 meses; seguir con 1 mes de descanso. Suspender de inmediato si hay taquicardia, mareo, dolor de cabeza intenso o falta de aire.",
+        "Consulta a tu médico antes de usarlo si tomas medicamentos (p. ej. IMAO, antidepresivos, aspirina, antiinflamatorios o estimulantes) o si tienes alguna condición médica (cardíaca, hepática, renal, tiroidea, presión alta, diabetes, entre otras). Suspende 2 semanas antes de una cirugía. Puede contener ingredientes prohibidos por algunas organizaciones deportivas."
+      ],
+      "description": "Quemador de grasa para mujer de Nutrex Research en cápsulas líquidas, con CitruBurn™ (Citrus aurantium), GBBGO® y Rauwolfia vomitoria, más un complejo de cabello y belleza con ácido fólico, vitamina B12 y biotina (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "lipo-intense",
+      "name": "LIPO INTENSE",
+      "brand": "NUTREX",
+      "category": "Quemador de grasa termogénico",
+      "presentation": "60 cápsulas",
+      "flavors": [],
+      "price_retail": 25,
+      "price_wholesale": 19,
+      "stock": 0,
+      "servings": 0,
+      "serving_size": "1 cápsula",
+      "image": "img/products/lipo-intense",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Termogénico de alta intensidad (según el fabricante)",
+        "Apoyo al control del apetito (según el fabricante)"
+      ],
+      "usage": "Tomar 1 cápsula en la mañana y 1 en la tarde. No exceder 1 cápsula por toma ni 2 tomas en 24 horas. No tomar dentro de las 6 horas previas a dormir.",
+      "warnings": [],
+      "description": "Quemador de grasa de alta intensidad de Nutrex Research en cápsulas líquidas, con Paradoxine® (grains of paradise), N-acetil-L-tirosina, teobromina, Rauwolfia vomitoria y yohimbina HCl (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "liquid-collagen",
+      "name": "Liquid Collagen",
+      "brand": "ProSupps",
+      "category": "Colágeno",
+      "presentation": "32 fl oz (960 mL)",
+      "flavors": [
+        "Berry"
+      ],
+      "price_retail": 38,
+      "price_wholesale": 33,
+      "stock": 0,
+      "servings": 16,
+      "serving_size": "1 porción líquida",
+      "image": "img/products/liquid-collagen",
+      "badges": [],
+      "tag": "",
+      "popularity": 60,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "muscle",
+          "text": "Recuperación"
+        },
+        {
+          "icon": "heart",
+          "text": "Envejecimiento saludable"
+        },
+        {
+          "icon": "check",
+          "text": "Apoyo articular. Péptidos de colágeno, 16 porciones"
+        }
+      ],
+      "usage": "Toma la porción indicada en la etiqueta, directa o mezclada con agua. Agita antes de usar.",
+      "warnings": [
+        "Solo para mayores de 18 años.",
+        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
+        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
+        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
+      ],
+      "description": "Suplemento de aminoácidos: péptidos de colágeno (Amino 23).",
+      "active": true
+    },
+    {
+      "id": "mr-hyde-signature",
+      "name": "MR HYDE SIGNATURE",
+      "brand": "PROSUPPS",
+      "category": "Pre-entreno",
+      "presentation": "30 porciones · Fruit Punch",
+      "flavors": [
+        "Fruit Punch"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "",
+      "image": "img/products/mr-hyde-signature",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "Pre-entreno formulado para un aporte potente de energía y enfoque."
+        },
+        {
+          "icon": "drop",
+          "text": "Apoya la hidratación durante el rendimiento."
+        }
+      ],
+      "usage": "Mezclar 1 scoop con 8 oz (240 ml) de agua fría y tomar 15-30 minutos antes de entrenar.",
+      "warnings": [
+        "Contiene aproximadamente 200 mg de cafeína por porción (similar a 2 tazas de café); el exceso de cafeína puede causar nerviosismo, irritabilidad, insomnio o taquicardia.",
+        "No usar si está embarazada, en lactancia o si es menor de 18 años; consultar a un profesional de salud si tiene enfermedad cardíaca, tiroidea, diabetes, hipertensión o condiciones psiquiátricas.",
+        "No exceder 2 porciones al día ni combinar con otras fuentes de cafeína; no tomar dentro de las 4 horas previas a dormir.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Pre-entreno Mr. Hyde Signature de ProSupps sabor Fruit Punch, envase de 30 porciones.",
+      "active": true
+    },
+    {
+      "id": "mr-hyde-xtreme",
+      "name": "MR HYDE XTREME",
+      "brand": "PROSUPPS",
+      "category": "Pre-entreno",
+      "presentation": "30 porciones · Pixie Dust",
+      "flavors": [
+        "Pixie Dust"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "",
+      "image": "img/products/mr-hyde-xtreme",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "bolt",
+          "text": "Pre-entreno de alta estimulación con matriz de energía y enfoque para un aumento inmediato de energía."
+        },
+        {
+          "icon": "scoop",
+          "text": "Formulado como fórmula de una sola porción."
+        }
+      ],
+      "usage": "Mezclar 1 scoop con 8 oz (240 ml) de agua fría y tomar 15-30 minutos antes de entrenar. No exceder una porción en 24 horas.",
+      "warnings": [
+        "No exceder una porción en 24 horas ni consumir dentro de las 4 horas previas a dormir.",
+        "Solo para adultos sanos de 18 años o más; no usar si está embarazada, en lactancia o tomando medicamentos; consultar a un médico antes de usar.",
+        "El exceso de cafeína puede causar nerviosismo, irritabilidad, insomnio y taquicardia ocasional."
+      ],
+      "description": "Pre-entreno Hyde Xtreme de ProSupps sabor Pixie Dust, envase de 30 porciones.",
+      "active": true
+    },
+    {
+      "id": "niox",
+      "name": "NIOX",
+      "brand": "NUTREX",
+      "category": "Pre-entreno",
+      "presentation": "90 cápsulas · suministro para 1 mes",
+      "flavors": [],
+      "price_retail": 35,
+      "price_wholesale": 30,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "3 cápsulas",
+      "image": "img/products/niox",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "scoop",
+          "text": "2.000 mg de nitrato de arginina (NO3-T®) por porción."
+        },
+        {
+          "icon": "check",
+          "text": "Con 100 mg de vitamina C (PureWay-C®) y 25 mg de AstraGin™."
+        },
+        {
+          "icon": "muscle",
+          "text": "Apoya el flujo sanguíneo y el bombeo muscular durante el entrenamiento."
+        }
+      ],
+      "usage": "Toma 3 cápsulas 30 minutos antes de entrenar; en días de descanso, toma 3 cápsulas entre comidas. No tomes más de una porción al día.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Consulta a un médico antes de usarlo si tienes alguna condición médica o tomas medicamentos, especialmente para hipertensión, enfermedades del corazón o inhibidores de PDE5.",
+        "No tomar junto con otros nitratos (medicamentos o suplementos). Suspender si hay alguna reacción adversa.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Niox de Nutrex, suplemento de óxido nítrico en frasco de 90 cápsulas.",
+      "active": true
+    },
+    {
+      "id": "one-more-repit",
+      "name": "ONE MORE REP",
+      "brand": "BPI",
+      "category": "Pre-entreno",
+      "presentation": "250 g (8.8 oz) · 25 porciones",
+      "flavors": [
+        "Berry Splash"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 25,
+      "serving_size": "1 scoop (10 g)",
+      "image": "img/products/one-more-repit",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Sin beta-alanina ni creatina (según el fabricante)",
+        "Enfocado en el bombeo muscular (según el fabricante)"
+      ],
+      "usage": "Mezclar 1 scoop (10 g) en 6-8 oz (180-240 ml) de agua fría y tomar 15-30 minutos antes de entrenar; no exceder una porción por día de entrenamiento.",
+      "warnings": [
+        "Contiene cafeína: aproximadamente tanta como tres tazas de café; no combinar con otros suplementos o medicamentos con cafeína.",
+        "Contiene extracto de corteza de yohimbe y niacina; la niacina puede causar enrojecimiento y hormigueo temporales.",
+        "No apto para menores de 18 años; no tomar dentro de las 4 horas previas a dormir.",
+        "Suspender su uso dos semanas antes de una cirugía."
+      ],
+      "description": "Pre-entreno de BPI Sports, sucesor de la línea 1.M.R. Combina citrulina, carnitina, betabel en polvo y cafeína, sin beta-alanina ni creatina y sin colorantes artificiales (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "outrage",
+      "name": "OUTRAGE",
+      "brand": "NUTREX",
+      "category": "Pre-entreno",
+      "presentation": "30 porciones",
+      "flavors": [
+        "Lemon Lime"
+      ],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 scoop (7 g)",
+      "image": "img/products/outrage",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "Energía, enfoque y potencia (según el fabricante)"
+      ],
+      "usage": "Agitar el envase antes de usar. Mezclar un scoop raso con 8 oz de agua fría y tomar 30–45 minutos antes de entrenar. Solo una porción en 24 horas.",
+      "warnings": [
+        "Puede ser más fuerte que otros pre-entrenos: nunca exceder un scoop ni una porción en 24 horas."
+      ],
+      "description": "Pre-entreno de alto estímulo de Nutrex Research con beta-alanina, L-citrulina, creatina monohidratada, cafeína, extracto de Citrus aurantium, L-tirosina y yohimbina (según el fabricante).",
+      "active": true
+    },
+    {
+      "id": "t-up",
+      "name": "T-UP MAX",
+      "brand": "NUTREX",
+      "category": "Soporte de testosterona",
+      "presentation": "60 cápsulas · 1 mes",
+      "flavors": [],
+      "price_retail": 25,
+      "price_wholesale": 20,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "2 cápsulas",
+      "image": "img/products/t-up",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "scoop",
+          "text": "Por porción: KSM-66® Ashwagandha (100 mg), Tongkat Ali/Longjack (100 mg) y Tribulus terrestris (300 mg)."
+        },
+        {
+          "icon": "check",
+          "text": "Incluye fenogreco (300 mg), Horny Goat Weed (300 mg) y maca (100 mg)."
+        },
+        {
+          "icon": "check",
+          "text": "Con vitamina D (50 mcg) y zinc (10 mg)."
+        }
+      ],
+      "usage": "Toma 2 cápsulas una vez al día entre comidas. Para mejores resultados, úsalo diariamente y de forma constante.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Consulta a tu médico si tienes alguna condición médica o tomas algún medicamento.",
+        "Contiene leche.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "T-Up Max de Nutrex, fórmula herbal de apoyo a la testosterona en frasco de 60 cápsulas.",
+      "active": true
+    },
+    {
+      "id": "tribulos-black",
+      "name": "TRIBULUS 1400",
+      "brand": "NUTREX",
+      "category": "Soporte hormonal",
+      "presentation": "90 cápsulas",
+      "flavors": [],
+      "price_retail": 15,
+      "price_wholesale": 11,
+      "stock": 0,
+      "servings": 45,
+      "serving_size": "2 cápsulas",
+      "image": "img/products/tribulos-black",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        {
+          "icon": "scoop",
+          "text": "1.400 mg de extracto de Tribulus terrestris (fruto) por porción."
+        },
+        {
+          "icon": "check",
+          "text": "Estandarizado al 45% de saponinas."
+        },
+        {
+          "icon": "check",
+          "text": "Apoya niveles saludables de testosterona."
+        }
+      ],
+      "usage": "Toma 2 cápsulas 1–2 veces al día con alimentos. Para mejores resultados, úsalo diariamente y de forma constante.",
+      "warnings": [
+        "No usar si eres menor de 18 años, estás embarazada o en periodo de lactancia.",
+        "Consulta a tu médico si tienes alguna condición médica o tomas algún medicamento.",
+        "Mantener fuera del alcance de los niños."
+      ],
+      "description": "Nutrex Tribulus 1400 en presentación de 90 cápsulas.",
+      "active": true
+    },
+    {
+      "id": "whet-ps-5lbs",
+      "name": "WHEY PS 5LBS",
+      "brand": "PROSUPPS",
+      "category": "Proteína whey",
+      "presentation": "Polvo · 5 lb (2.27 kg) · 62 porciones",
+      "flavors": [
+        "Chocolate"
+      ],
+      "price_retail": 75,
+      "price_wholesale": 70,
+      "stock": 0,
+      "servings": 62,
+      "serving_size": "",
+      "image": "img/products/whet-ps-5lbs",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "24 g de proteína por porción (etiqueta)"
+      ],
+      "usage": "Mezclar 1 scoop con 6-8 oz (180-240 ml) de agua fría o leche según la consistencia deseada; se puede tomar 1-2 scoops dentro de los 30 minutos después de entrenar, en el desayuno o como reemplazo de comida.",
+      "warnings": [
+        "Contiene leche.",
+        "Fabricado en una instalación que procesa leche, huevo, pescado, mariscos, frutos de cáscara, maní, trigo, sésamo y soya."
+      ],
+      "description": "Proteína de suero ProSupps sabor chocolate. Presentación de 5 lb (2.27 kg), 62 porciones. Confirmado directamente en el envase del cliente.",
+      "active": true
+    },
+    {
+      "id": "whey-ps-2lbs",
+      "name": "WHEY PS 2LBS",
+      "brand": "PROSUPPS",
+      "category": "Proteína whey",
+      "presentation": "Polvo · 41.27 oz (2.57 lb / 1.17 kg) · 30 porciones",
+      "flavors": [
+        "Chocolate"
+      ],
+      "price_retail": 38,
+      "price_wholesale": 34,
+      "stock": 0,
+      "servings": 30,
+      "serving_size": "1 scoop",
+      "image": "img/products/whey-ps-2lbs",
+      "badges": [],
+      "tag": "",
+      "popularity": 0,
+      "macros": {
+        "calories": 0,
+        "protein": 0,
+        "carbs": 0,
+        "sugar": 0,
+        "fat": 0,
+        "sodium": 0
+      },
+      "benefits": [
+        "24 g de proteína por porción (etiqueta)",
+        "150 calorías por porción (etiqueta)"
+      ],
+      "usage": "Mezclar 1 scoop con 8 oz (240 ml) de agua fría, ajustando la cantidad según la consistencia deseada.",
+      "warnings": [
+        "Usar este producto solo como suplemento alimenticio. No usar para reducción de peso (etiqueta)."
+      ],
+      "description": "Proteína de suero ProSupps elaborada con cacao Ghirardelli, sabor chocolate. Presentación de 2.57 lb (1.17 kg), 30 porciones. Confirmado directamente en el envase del cliente.",
+      "active": true
+    }
+  ],
+  "combos": [
+    {
+      "id": "combo-proteina-creatina",
+      "name": "Combo Proteína + Creatina",
+      "note": "Isofit + Creatine for Women",
+      "items": [
+        {
+          "product": "isofit-5lb",
+          "qty": 1
+        },
+        {
+          "product": "creatine-women",
+          "qty": 1
+        }
+      ],
+      "discount": 10,
+      "active": false
+    },
+    {
+      "id": "combo-recuperacion",
+      "name": "Combo Recuperación",
+      "note": "Animal Whey + Liquid Collagen",
+      "items": [
+        {
+          "product": "animal-whey-4lb",
+          "qty": 1
+        },
+        {
+          "product": "liquid-collagen",
+          "qty": 1
+        }
+      ],
+      "discount": 8,
+      "active": false
+    }
+  ]
+}
