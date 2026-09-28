@@ -68,7 +68,7 @@ export const isRealReview = (r) => r && r.name !== 'Cliente de ejemplo' && !PLAC
 // Versión de las imágenes (?v=). Las imágenes se sirven con caché de un año: si se reemplaza un
 // archivo existente conservando su nombre, sube este valor para que los navegadores lo descarguen.
 // (Las fotos subidas desde /admin reciben un nombre nuevo y no lo necesitan. CSS/JS se versionan solos.)
-export const ASSET_V = '20260927c';
+export const ASSET_V = '20260928a';
 // Marcador único de marca para productos sin fotografía confirmada (nunca la foto de otro producto).
 export const placeholder = (alt = '') => h`<span class="noimg" role="img" aria-label="${alt}"><img class="noimg-mark" src="/img/logo-192.webp?v=${ASSET_V}" alt="" aria-hidden="true" width="96" height="85" loading="lazy" decoding="async"><span class="noimg-txt">Imagen próximamente</span></span>`;
 // Imágenes WebP responsivas con carga diferida (las primeras se cargan de inmediato).
