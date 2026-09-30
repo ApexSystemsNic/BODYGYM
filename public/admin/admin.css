@@ -156,6 +156,14 @@ dialog.admin-sheet[open] { display: flex; flex-direction: column; }
 .stepper input { height: 56px; text-align: center; font-size: 1.4rem !important; font-weight: 900; }
 
 /* ───────────── Cuenta y usuarios ───────────── */
+.gal-upload { margin-bottom: 16px; }
+.gal-upload h3 { margin: 0; }
+.gal-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr)); }
+.gal-item { margin: 0; display: grid; gap: 6px; min-width: 0; }
+.gal-item img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); background: var(--field); }
+.gal-item figcaption { font-size: .78rem; color: var(--muted); overflow-wrap: anywhere; }
+.gal-item .gal-del { justify-self: start; min-height: 40px; }
+.gal-item .tag { display: inline-block; margin-right: 6px; padding: 1px 6px; border-radius: 6px; background: var(--field); border: 1px solid var(--line); color: var(--text); font-weight: 700; }
 .acct-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); align-items: start; }
 .acct-grid .panel h3 { margin: 0; }
 .acct-grid .narrow { max-width: none; }
@@ -172,13 +180,15 @@ dialog.admin-sheet[open] { display: flex; flex-direction: column; }
 /* Tablet y escritorio estrecho: la cabecera prioriza las secciones; «Ver tienda» queda como icono y el
    botón de salida usa la etiqueta corta «Salir». */
 .lbl-short { display: none; }
-@media (max-width: 1100px) {
+@media (max-width: 1240px) {
   .whoami, .admin-actions a.btn .lbl { display: none; }
   .admin-actions .lbl-long { display: none; }
   .admin-actions .lbl-short { display: inline; }
   .admin-tab { padding: 0 11px; }
 }
-@media (min-width: 761px) and (max-width: 1100px) { .admin-actions { margin-left: auto; } .admin-tabs { margin: 0; } }
+@media (min-width: 761px) and (max-width: 1240px) { .admin-actions { margin-left: auto; } .admin-tabs { margin: 0; } }
+/* Cinco secciones: en tablet (761–1000 px) las pestañas muestran solo el texto para que quepan junto a la marca. */
+@media (min-width: 761px) and (max-width: 1000px) { .admin-tab { padding: 0 9px; } .admin-tab .ic { display: none; } }
 
 /* ───────────── Teléfono y tablet estrecha ───────────── */
 @media (max-width: 760px) {
@@ -187,7 +197,7 @@ dialog.admin-sheet[open] { display: flex; flex-direction: column; }
   .admin-actions .btn { min-height: 44px; padding-inline: 12px; }
   .admin-actions a.btn .lbl { display: none; }
   /* Navegación principal como barra inferior de aplicación */
-  .admin-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; margin: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #0f1115; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .admin-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; margin: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #0f1115; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
   .admin-tab { flex-direction: column; justify-content: center; gap: 3px; min-height: 52px; padding: 4px 2px; font-size: .72rem; border-radius: 10px; }
   .admin-tab .ic { width: 22px; height: 22px; }
   .admin-tab[aria-current="page"] { background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); }

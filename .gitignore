@@ -21,6 +21,13 @@ backups/
 documentos-cliente/
 img-src/
 
+# Photos uploaded from the admin panel (runtime data, like the database)
+public/images/gallery/gym-*
+
+# Packaged patches and archives
+*.tgz
+*.patch
+
 # Logs, caches and test output
 *.log
 logs/
@@ -39,7 +46,3 @@ playwright-report/
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Local assistant/tooling configuration
-.claude/
-CLAUDE.md

@@ -63,6 +63,16 @@ CREATE TABLE IF NOT EXISTS orders (
   total REAL NOT NULL,
   status TEXT NOT NULL DEFAULT 'nuevo'
 );
+CREATE TABLE IF NOT EXISTS gallery (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  file TEXT NOT NULL UNIQUE,
+  alt TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS gallery_removed (
+  file TEXT PRIMARY KEY,
+  removed_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 CREATE TABLE IF NOT EXISTS admins (
   username TEXT PRIMARY KEY,
   salt TEXT NOT NULL,

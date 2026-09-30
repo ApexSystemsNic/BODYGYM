@@ -1,9 +1,10 @@
 {
   "_nota": "Configuración del sitio. Edita estos datos con la información real del gimnasio.",
   "name": "BodyFactory Gym",
-  "whatsapp": "50589663808",
+  "whatsapp": "50576816733",
   "instagram": "https://www.instagram.com/bodyfactorylavirgen",
   "instagramHandle": "@bodyfactorylavirgen",
+  "facebook": "https://www.facebook.com/share/19Z4qC4YJr/?mibextid=wwXIfr",
   "address": "Body Factory Gym, Montoya, Managua, Nicaragua",
   "mapEmbed": "https://www.google.com/maps?q=Body+Factory+Gym+Montoya,+Managua,+Nicaragua&output=embed",
   "mapLink": "https://www.google.com/maps/search/?api=1&query=Body+Factory+Gym+Montoya,+Managua,+Nicaragua",
@@ -22,6 +23,58 @@
     }
   ],
   "delivery": "Delivery gratis en Managua",
+  "transfers": [
+    {
+      "bank": "BAC",
+      "holder": "Maria Olga Arias",
+      "account": "369061536"
+    },
+    {
+      "bank": "Banco LAFISE",
+      "holder": "Maria Olga Arias",
+      "account": "134240015"
+    },
+    {
+      "bank": "Banpro",
+      "holder": "Abraham Josue Mendoza Arias",
+      "account": "10012110002053",
+      "currency": "Dólares"
+    }
+  ],
+  "gallery": [
+    {
+      "file": "bodyfactory-gallery-01",
+      "alt": "Afiche de BodyFactory Gym con productos Animal Whey Protein, Isofit y Whey Protein"
+    },
+    {
+      "file": "bodyfactory-gallery-02",
+      "alt": "Clienta preparando creatina Nutrex dentro del gimnasio"
+    },
+    {
+      "file": "bodyfactory-gallery-03",
+      "alt": "Clienta con mancuernas y productos Animal Stak y Animal Whey en el área de pesas"
+    },
+    {
+      "file": "bodyfactory-gallery-04",
+      "alt": "Clienta mostrando un bote de Animal Flex en el gimnasio"
+    },
+    {
+      "file": "bodyfactory-gallery-06",
+      "alt": "Estantería de suplementos en la tienda de BodyFactory Gym"
+    },
+    {
+      "file": "bodyfactory-gallery-07",
+      "alt": "Vitrina con Animal Stak, Animal Omega y Animal Test en la tienda de BodyFactory Gym"
+    },
+    {
+      "file": "bodyfactory-gallery-08",
+      "alt": "Clienta con Animal 100% Whey Protein sabor chocolate en el área de pesas"
+    },
+    {
+      "file": "bodyfactory-gallery-09",
+      "alt": "Clienta tomando una bebida energética Bum en el gimnasio"
+    }
+  ],
   "faq": [
     {
       "q": "¿Cómo hago mi pedido?",

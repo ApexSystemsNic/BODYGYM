@@ -67,7 +67,8 @@ function organizationLd(site, origin) {
   };
   if (site.whatsapp) o.telephone = `+${site.whatsapp}`;
   if (site.address) o.address = { '@type': 'PostalAddress', streetAddress: 'Montoya', addressLocality: 'Managua', addressCountry: 'NI' };
-  if (site.instagram && /^https:/.test(site.instagram)) o.sameAs = [site.instagram];
+  const social = [site.instagram, site.facebook].filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
+  if (social.length) o.sameAs = social;
   return o;
 }
 const breadcrumbLd = (items) => ({

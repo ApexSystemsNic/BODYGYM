@@ -113,6 +113,9 @@ section.wrap > h2::after, #resenas .bar h2::after { content: ""; position: absol
 .hero-logo { width: clamp(92px, 12vw, 160px); height: auto; }
 .hero > div { flex: 1 1 280px; min-width: 0; }
 .hero h1 { font-size: clamp(1.6rem, 1.1rem + 2.4vw, 2.8rem); font-weight: 900; }
+/* Título principal de la portada: Space Grotesk 600 (archivo propio en /fonts; el resto del sitio usa la fuente del sistema). */
+@font-face { font-family: "Space Grotesk"; src: url("/fonts/space-grotesk-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+.hero:not(.hero-cat) h1 { font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; font-weight: 600; }
 .hero-sub { color: var(--muted); margin: 8px 0 0; font-size: var(--fs-md); }
 
 /* ── Filtros ── */
@@ -251,13 +254,28 @@ section.wrap > h2::after, #resenas .bar h2::after { content: ""; position: absol
 .panel dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: var(--fs-sm); }
 .panel dt { color: var(--muted); }
 .panel dd { margin: 0; text-align: right; }
+.transfer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.transfer-list li { display: grid; gap: 2px; padding: 10px 12px; border-radius: 8px; background: var(--field); border: 1px solid var(--line-soft); min-width: 0; }
+.tr-bank { font-weight: 700; }
+.tr-cur { margin-left: 6px; font-size: var(--fs-xs); font-weight: 600; color: var(--gold); }
+.tr-acc { font-size: 1.15rem; font-weight: 700; letter-spacing: .02em; font-variant-numeric: tabular-nums; user-select: all; overflow-wrap: anywhere; }
+.tr-holder { font-size: var(--fs-sm); color: var(--muted); }
 .map { width: 100%; aspect-ratio: 16 / 10; border: 0; border-radius: 8px; background: var(--field); }
 .link-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.gallery-editorial { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--gap); margin-top: 14px; }
-.gallery-editorial figure { margin: 0; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; background: var(--surface); border: 1px solid var(--line); transition: border-color .2s ease; }
-.gallery-editorial figure:hover { border-color: var(--gold); }
-.gallery-editorial img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.gallery-more { display: flex; margin: 16px auto 0; }
+.gallery-editorial { margin-top: 14px; min-width: 0; }
+.gal-track { display: flex; gap: var(--gap); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: var(--radius); }
+.gal-track::-webkit-scrollbar { display: none; }
+.gal-track:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.gal-slide { flex: 0 0 85%; margin: 0; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; background: var(--surface); border: 1px solid var(--line); transition: border-color .2s ease; }
+.gal-slide:hover { border-color: var(--gold); }
+.gal-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.gal-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
+.gal-arrow { min-width: 44px; min-height: 44px; padding: 0; font-size: 1.5rem; line-height: 1; }
+.gal-dots { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 60%; }
+.gal-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: background-color .3s ease, transform .3s ease; }
+.gal-dots i.on { background: var(--gold); transform: scale(1.3); }
+@media (min-width: 640px) { .gal-slide { flex-basis: calc((100% - var(--gap)) / 2); } }
+@media (min-width: 1000px) { .gal-slide { flex-basis: calc((100% - 2 * var(--gap)) / 3); } }
 .faq details { margin-bottom: 10px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
 .faq summary { cursor: pointer; padding: 14px 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 12px; min-height: 44px; }
 .faq summary::-webkit-details-marker { display: none; }
@@ -494,7 +512,7 @@ textarea.field { height: auto; min-height: 100px; padding: 10px 12px; resize: ve
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .card, .toast, .btn, .chip, .gallery-editorial figure { transition: none; }
+  .card, .toast, .btn, .chip, .gal-slide, .gal-dots i { transition: none; }
   .card:hover { transform: none; }
 }
 

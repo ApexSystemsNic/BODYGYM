@@ -133,6 +133,7 @@ async function render() {
   if (tab === 'products') await renderProducts(view);
   else if (tab === 'orders') await renderOrders(view);
   else if (tab === 'reviews') await renderReviews(view);
+  else if (tab === 'gallery') await renderGallery(view);
   else await renderAccount(view);
 }
 
@@ -849,6 +850,63 @@ $('#view').addEventListener('submit', (e) => {
         form.reset(); toast(`✓ Usuario ${u.username} creado`); await renderAccount($('#view'));
       } finally { btn.disabled = false; }
     }
+  });
+});
+
+// ───────────── galería «Nuestro gimnasio» ─────────────
+// Muestra la galería publicada completa (fotos del sitio + subidas); cualquiera se puede quitar del carrusel.
+async function renderGallery(view) {
+  const photos = await api('/gallery');
+  const photo = (p) => h`<figure class="gal-item">
+      <img src="/images/gallery/${p.file}-600.webp?v=__IMG_V__" alt="${p.alt}" loading="lazy" decoding="async" width="600" height="750">
+      <figcaption><span class="tag">${p.origin === 'upload' ? 'Subida' : 'Del sitio'}</span>${p.alt}</figcaption>
+      <button type="button" class="btn small danger gal-del" data-act="gal-del" data-file="${p.file}" aria-label="Eliminar foto: ${p.alt}">Eliminar</button></figure>`;
+  view.innerHTML = h`<div class="bar view-head"><div><h2>Nuestro gimnasio</h2><span class="muted hint">${photos.length} fotos en el carrusel de la tienda</span></div></div>
+    <section class="panel gal-upload">
+      <h3>Subir una foto</h3>
+      <form class="narrow" id="galForm" novalidate>
+        <label>Foto (JPG, PNG o WebP, máx. 10 MB)<input class="field" type="file" name="photo" accept="image/jpeg,image/png,image/webp" required></label>
+        <label>Descripción breve (opcional)<input class="field" name="alt" maxlength="120" placeholder="Ej.: Área de pesas del gimnasio"></label>
+        <p id="galMsg" class="save-msg" role="status"></p>
+        <button class="btn" type="submit">Subir foto</button>
+        <p class="muted fine">Se convierte a WebP y se publica al final del carrusel «Nuestro gimnasio».</p>
+      </form>
+    </section>
+    <div class="gal-grid">${photos.map(photo)}</div>`.s;
+}
+let galBusy = false;
+$('#view').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act="gal-del"]');
+  if (!b || galBusy) return;
+  if (!confirm('¿Eliminar esta foto de «Nuestro gimnasio»? Dejará de verse en la tienda y no se puede deshacer.')) return;
+  galBusy = true; b.disabled = true;
+  run(async () => {
+    try {
+      await api(`/gallery/${encodeURIComponent(b.dataset.file)}`, { method: 'DELETE' });
+      toast('✓ Foto eliminada');
+      await renderGallery($('#view'));
+    } finally { galBusy = false; b.disabled = false; }
+  });
+});
+$('#view').addEventListener('submit', (e) => {
+  if (e.target.id !== 'galForm') return;
+  e.preventDefault();
+  if (galBusy) return;
+  const form = e.target;
+  const file = form.elements.photo.files[0];
+  const msg = $('#galMsg'); const btn = form.querySelector('button[type=submit]');
+  msg.className = 'save-msg bad';
+  if (!file) { msg.textContent = 'Elige una foto.'; return; }
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { msg.textContent = 'Solo JPG, PNG o WebP.'; return; }
+  if (file.size > 10 * 1024 * 1024) { msg.textContent = 'La foto supera 10 MB.'; return; }
+  galBusy = true; btn.disabled = true; msg.className = 'save-msg'; msg.textContent = 'Subiendo foto…';
+  run(async () => {
+    try {
+      await api('/gallery', { method: 'POST', body: file, headers: { 'Content-Type': file.type, 'X-Photo-Alt': encodeURIComponent(form.elements.alt.value.trim()) } });
+      toast('✓ Foto publicada en «Nuestro gimnasio»');
+      await renderGallery($('#view'));
+    } catch (err) { msg.className = 'save-msg bad'; msg.textContent = `No se pudo subir la foto: ${err.message}`; btn.disabled = false; if (err.message === 'Sesión terminada') throw err; }
+    finally { galBusy = false; }
   });
 });
 

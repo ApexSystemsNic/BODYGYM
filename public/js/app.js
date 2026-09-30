@@ -12,7 +12,7 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 // ───────────── estado ─────────────
 const state = {
   products: [], combos: [], reviews: [], site: null,
-  mode: 'retail', cart: [], cat: 'Todas', q: '', sort: 'pop', galGroup: 'Todas', page: 1, galExpanded: false,
+  mode: 'retail', cart: [], cat: 'Todas', q: '', sort: 'pop', galGroup: 'Todas', page: 1,
   compareExpanded: false, compareCat: 'Todas',
 };
 const store = {
@@ -291,7 +291,7 @@ function renderCombos() {
   $('#comboList').innerHTML = h`${list.map((c) => {
     const { sum, price } = comboPrice(c);
     const items = c.items.map((i) => ({ p: byId(i.product), qty: i.qty }));
-    const ok = items.every((x) => x.p && x.p.stock >= x.qty);
+    const ok = items.every((x) => x.p);
     return h`<article class="combo">
       <h3>${c.name}<span class="off-tag">-${c.discount}%</span></h3>
       <ul>${items.filter((x) => x.p).map((x) => h`<li>${x.qty}× ${x.p.name} (${x.p.presentation})</li>`)}</ul>
@@ -435,33 +435,144 @@ function renderAbout() {
       <p class="muted" style="margin:0">Llevamos tu pedido sin costo a cualquier punto de Managua. Para otras zonas, coordinamos por WhatsApp.</p>
       <div class="link-row">
         <a class="btn wa small" href="https://wa.me/${s.whatsapp}" target="_blank" rel="noopener noreferrer">${icon('whatsapp')} WhatsApp</a>
-        <a class="btn metal small" href="${s.instagram}" target="_blank" rel="noopener noreferrer">${icon('instagram')} ${s.instagramHandle}</a></div></div>`.s;
+        <a class="btn metal small" href="${s.instagram}" target="_blank" rel="noopener noreferrer">${icon('instagram')} ${s.instagramHandle}</a>
+        ${/^https:\/\//.test(s.facebook || '') ? h`<a class="btn metal small" href="${s.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook de ${s.name} (se abre en otra pestaña)">${icon('facebook')} Facebook</a>` : ''}</div></div>
+    ${(s.transfers || []).length ? h`<div class="panel transfers"><h3>${icon('bank')} Transferencias</h3>
+      <ul class="transfer-list">${s.transfers.map((t) => h`<li>
+        <span class="tr-bank">${t.bank}${t.currency ? h` <span class="tr-cur">${t.currency}</span>` : ''}</span>
+        <span class="tr-acc">${t.account}</span>
+        ${t.holder ? h`<span class="tr-holder">${t.holder}</span>` : ''}
+      </li>`)}</ul></div>` : ''}`.s;
 }
 
-// Fotos reales del gimnasio (public/images/gallery/, versiones de 600 y 1000 px).
-const GALLERY_PHOTOS = [
-  { file: 'bodyfactory-gallery-01', alt: 'Afiche de BodyFactory Gym con productos Animal Whey Protein, Isofit y Whey Protein' },
-  { file: 'bodyfactory-gallery-02', alt: 'Clienta preparando creatina Nutrex dentro del gimnasio' },
-  { file: 'bodyfactory-gallery-03', alt: 'Clienta con mancuernas y productos Animal Stak y Animal Whey en el área de pesas' },
-  { file: 'bodyfactory-gallery-04', alt: 'Clienta mostrando un bote de Animal Flex en el gimnasio' },
-  { file: 'bodyfactory-gallery-06', alt: 'Estantería de suplementos en la tienda de BodyFactory Gym' },
-];
-const GALLERY_VISIBLE = 3;
+// Fotos reales del gimnasio (public/images/gallery/, versiones de 600 y 1000 px). La lista publicada la da
+// /api/gallery (fotos de data/site.json que no se quitaron desde el panel + fotos subidas desde el panel);
+// si la API no responde se usa la lista de data/site.json.
+let galleryList = null;
+// Cinta continua: las fotos se desplazan sin pausas (requestAnimationFrame sobre el scroll horizontal de la
+// pista, así el deslizamiento manual sigue siendo nativo). La lista se pinta dos o más veces SOLO en el DOM:
+// al recorrer una vuelta completa se resta su ancho exacto y el salto es invisible porque el contenido es idéntico.
+// Se mueve siempre, también con «reducir movimiento» del sistema (en Windows lo activa el ajuste «Efectos de
+// animación» apagado): es un desplazamiento lento, sin destellos ni zoom, y el visitante puede arrastrarlo o usar las flechas.
+const GAL_SPEED = 32; // píxeles por segundo
+const GAL_IDLE = 180; // ms sin eventos de scroll para dar por terminada una interacción manual
+const gal = { raf: 0, last: 0, pos: 0, set: 0, n: 0, visible: true, observer: null, active: false, down: false, idle: 0, dots: 0 };
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function renderGallery() {
-  const shown = state.galExpanded ? GALLERY_PHOTOS : GALLERY_PHOTOS.slice(0, GALLERY_VISIBLE);
-  const hasMore = GALLERY_PHOTOS.length > GALLERY_VISIBLE;
-  $('#gallery').innerHTML = h`${shown.map((p) => h`
-    <figure>
-      <img src="/images/gallery/${p.file}-600.webp?v=${ASSET_V}"
-           srcset="/images/gallery/${p.file}-600.webp?v=${ASSET_V} 600w, /images/gallery/${p.file}-1000.webp?v=${ASSET_V} 1000w"
-           sizes="(min-width:640px) 33vw, 50vw"
-           alt="${p.alt}" loading="lazy" decoding="async">
-    </figure>`)}`.s;
-  const moreBtn = $('#galMore');
-  if (moreBtn) moreBtn.remove();
-  if (hasMore) {
-    $('#gallery').insertAdjacentHTML('afterend', h`<button id="galMore" type="button" class="btn metal small gallery-more" data-action="gal-toggle">${state.galExpanded ? 'Ver menos' : `Ver más fotos (${GALLERY_PHOTOS.length - GALLERY_VISIBLE})`}</button>`.s);
+  const photos = (galleryList || state.site.gallery || []).filter((p) => p && /^[a-z0-9][a-z0-9-]*$/.test(p.file));
+  const copies = photos.length < 2 ? 1 : photos.length <= 3 ? 4 : 2; // copias visuales para el bucle infinito
+  const slide = (p, i, clone) => h`
+      <figure class="gal-slide" ${clone ? new Safe('aria-hidden="true"') : h`aria-roledescription="diapositiva" aria-label="${i + 1} de ${photos.length}"`}>
+        <img src="/images/gallery/${p.file}-600.webp?v=${ASSET_V}"
+             srcset="/images/gallery/${p.file}-600.webp?v=${ASSET_V} 600w, /images/gallery/${p.file}-1000.webp?v=${ASSET_V} 1000w"
+             sizes="(min-width:1000px) 33vw, (min-width:640px) 50vw, 85vw"
+             width="600" height="750" alt="${clone ? '' : p.alt}" loading="lazy" decoding="async">
+      </figure>`;
+  $('#gallery').innerHTML = h`
+    <div class="gal-track" id="galTrack" tabindex="0" role="region" aria-roledescription="carrusel" aria-label="Fotos de nuestro gimnasio">${Array.from({ length: copies }, (_, c) => photos.map((p, i) => slide(p, i, c > 0)))}</div>
+    <div class="gal-nav">
+      <button type="button" class="btn metal small gal-arrow" data-action="gal-prev" aria-label="Foto anterior">‹</button>
+      <div class="gal-dots" aria-hidden="true"></div>
+      <button type="button" class="btn metal small gal-arrow" data-action="gal-next" aria-label="Foto siguiente">›</button>
+    </div>`.s;
+  gal.n = photos.length;
+  gal.dots = 0;
+  const track = $('#galTrack');
+  galMeasure();
+  gal.pos = 0;
+  // Interacción manual (tocar, arrastrar, rueda, teclado): la cinta cede el control mientras dura y vuelve a
+  // moverse sola en cuanto el desplazamiento se detiene. El ratón encima y el foco NO la detienen.
+  // Con el dedo apoyado la cinta no se mueve; al soltar espera a que termine la inercia y sigue.
+  const start = () => { gal.active = true; clearTimeout(gal.idle); };
+  const settle = () => { clearTimeout(gal.idle); if (!gal.down) gal.idle = setTimeout(galResume, GAL_IDLE); };
+  // El ratón no arrastra la cinta (solo el dedo o un lápiz), así que un clic con ratón no la detiene.
+  const down = (e) => { if (e.pointerType === 'mouse') return; gal.down = true; start(); };
+  const up = () => { if (!gal.down) return; gal.down = false; settle(); };
+  track.addEventListener('pointerdown', down, { passive: true });
+  track.addEventListener('touchstart', down, { passive: true });
+  // (pointercancel no cuenta como soltar: el navegador lo emite cuando toma el control del arrastre táctil)
+  for (const ev of ['pointerup', 'touchend', 'touchcancel']) track.addEventListener(ev, up, { passive: true });
+  track.addEventListener('wheel', () => { start(); settle(); }, { passive: true });
+  track.addEventListener('keydown', () => { start(); settle(); });
+  track.addEventListener('scroll', () => { if (gal.active) settle(); galDots(); }, { passive: true });
+  if (!gal.observer && 'IntersectionObserver' in window) {
+    gal.observer = new IntersectionObserver(([e]) => { gal.visible = e.isIntersecting; galLoop(); });
+    gal.observer.observe($('#gallery'));
   }
+  galDots();
+  galLoop();
+}
+// Ancho exacto de una vuelta (distancia entre la primera foto y su primera copia).
+function galMeasure() {
+  const track = $('#galTrack');
+  const s = track ? track.children : [];
+  gal.set = s.length > gal.n && gal.n > 1 ? s[gal.n].getBoundingClientRect().left - s[0].getBoundingClientRect().left : 0;
+}
+function galStep() {
+  const s = $('#galTrack')?.children;
+  return s && s.length > 1 ? s[1].getBoundingClientRect().left - s[0].getBoundingClientRect().left : 0;
+}
+// Mantiene la posición dentro de la primera vuelta (el contenido de la copia es idéntico: no se nota).
+function galWrap(track) {
+  if (!gal.set) return;
+  if (gal.pos >= gal.set) gal.pos -= gal.set;
+  else if (gal.pos < 0) gal.pos += gal.set;
+  track.scrollLeft = gal.pos;
+}
+function galResume() {
+  const track = $('#galTrack');
+  if (!track) return;
+  gal.active = false;
+  gal.pos = track.scrollLeft;
+  galWrap(track);
+  gal.last = 0;
+  galLoop();
+}
+function galRunning() {
+  return !!gal.set && !gal.active && gal.visible && !document.hidden;
+}
+function galLoop() {
+  if (gal.raf || !galRunning()) return;
+  gal.last = 0;
+  gal.raf = requestAnimationFrame(galFrame);
+}
+function galFrame(t) {
+  gal.raf = 0;
+  const track = $('#galTrack');
+  if (!track || !galRunning()) return;
+  const dt = gal.last ? Math.min(t - gal.last, 100) : 0; // sin saltos al volver de otra pestaña
+  gal.last = t;
+  gal.pos += (GAL_SPEED * dt) / 1000;
+  galWrap(track);
+  gal.raf = requestAnimationFrame(galFrame);
+}
+// Flechas: avanzan o retroceden una foto con desplazamiento suave y luego la cinta sigue sola.
+function galGo(d) {
+  const track = $('#galTrack');
+  const step = galStep();
+  if (!track || !step) return;
+  gal.active = true;
+  clearTimeout(gal.idle);
+  gal.pos = track.scrollLeft;
+  if (d < 0 && gal.pos < step && gal.set) { gal.pos += gal.set; track.scrollLeft = gal.pos; }
+  track.scrollBy({ left: d * step, behavior: reducedMotion() ? 'auto' : 'smooth' });
+  gal.idle = setTimeout(galResume, 700);
+}
+function galDots() {
+  const dots = $('#gallery .gal-dots');
+  const track = $('#galTrack');
+  if (!dots || !track) return;
+  if (gal.dots !== gal.n) { dots.innerHTML = '<i></i>'.repeat(gal.n > 1 ? gal.n : 0); gal.dots = gal.n; }
+  const step = galStep();
+  const i = step ? Math.round(track.scrollLeft / step) % gal.n : 0;
+  [...dots.children].forEach((d, k) => d.classList.toggle('on', k === i));
+}
+window.addEventListener('resize', () => { if ($('#galTrack')) { galMeasure(); gal.pos = $('#galTrack').scrollLeft; } }, { passive: true });
+document.addEventListener('visibilitychange', galLoop);
+async function loadGallery() {
+  try { const list = await getJson('/api/gallery'); if (Array.isArray(list)) galleryList = list; } catch { /* se usa data/site.json */ }
+  renderGallery();
 }
 
 function renderFaq() {
@@ -554,7 +665,7 @@ document.addEventListener('click', (e) => {
     case 'product-page': break; // enlace normal a la página del producto
     case 'cmp-toggle': state.compareExpanded = !state.compareExpanded; renderCompare(); break;
     case 'cmp-cat': state.compareCat = t.dataset.cat; state.compareExpanded = false; renderCompare(); break;
-    case 'gal-toggle': state.galExpanded = !state.galExpanded; renderGallery(); break;
+    case 'gal-prev': case 'gal-next': galGo(action === 'gal-next' ? 1 : -1); break;
     case 'open-menu': setMenu(true); break;
     case 'toggle-search': toggleSearch(); break;
     case 'drawer-link': {
@@ -658,7 +769,7 @@ async function init() {
   await nextPaint();
   renderRest();
   if ($('#about')) renderAbout();
-  if ($('#gallery')) renderGallery();
+  if ($('#gallery')) loadGallery();
   if ($('#faqList')) renderFaq();
   routeHash();
   setTimeout(revalidate, 1200);

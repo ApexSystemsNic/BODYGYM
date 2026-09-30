@@ -37,7 +37,7 @@ const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.png': 'image/png',
   '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8',
-  '.webmanifest': 'application/manifest+json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8', '.woff2': 'font/woff2',
 };
 const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.svg', '.webmanifest']);
 const TAGS = new Set(['', 'best', 'new']);
@@ -164,6 +164,23 @@ const publicCombosStmt = db.prepare('SELECT * FROM combos WHERE active = 1');
 const publicProducts = () => publicProductsStmt.all().map(hydrate);
 const publicCombos = () => publicCombosStmt.all().map((c) => ({ ...c, items: JSON.parse(c.items), active: !!c.active }));
 
+// Fotos de «Nuestro gimnasio»: las del sitio (data/site.json, «gallery») menos las quitadas desde el panel
+// (tabla gallery_removed; los archivos versionados no se borran) + las subidas desde el panel (tabla gallery).
+const GALLERY_SIZES = [600, 1000];
+const GALLERY_NAME = /^[a-z0-9][a-z0-9-]{0,79}$/;
+async function siteGallery() {
+  try {
+    const list = JSON.parse(await readFile(join(publicDir, 'data', 'site.json'), 'utf8')).gallery;
+    return (Array.isArray(list) ? list : []).filter((p) => p && GALLERY_NAME.test(p.file)).map((p) => ({ file: p.file, alt: str(p.alt, 160) }));
+  } catch { return []; }
+}
+async function galleryPhotos() {
+  const removed = new Set(db.prepare('SELECT file FROM gallery_removed').all().map((r) => r.file));
+  const site = (await siteGallery()).filter((p) => !removed.has(p.file)).map((p) => ({ ...p, origin: 'site' }));
+  const uploads = db.prepare('SELECT file, alt FROM gallery ORDER BY id').all().map((p) => ({ ...p, origin: 'upload' }));
+  return [...site, ...uploads];
+}
+
 const approvedReviewsStmt = db.prepare("SELECT id, product, name, stars, text, created_at FROM reviews WHERE status = 'approved' AND name <> 'Cliente de ejemplo' AND text NOT LIKE 'Texto de ejemplo:%' ORDER BY id DESC");
 const approvedReviews = () => approvedReviewsStmt.all();
 
@@ -194,12 +211,11 @@ function getCatalog() {
 function buildOrder(body) {
   const mode = body.mode === 'wholesale' ? 'wholesale' : 'retail';
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) throw new HttpError(400, 'El carrito está vacío');
-  // Precios y stock se leen de la base en el momento del pedido (nunca de la caché ni del navegador).
+  // Precios se leen de la base en el momento del pedido (nunca de la caché ni del navegador).
+  // La disponibilidad no bloquea el pedido: se confirma por WhatsApp al recibirlo.
   const products = new Map(publicProducts().map((p) => [p.id, p]));
   const combos = new Map(publicCombos().map((c) => [c.id, c]));
   const lines = [];
-  const wanted = new Map(); // productId -> unidades totales (para validar stock)
-  const want = (id, qty) => wanted.set(id, (wanted.get(id) || 0) + qty);
 
   for (const it of body.items) {
     const qty = Math.floor(num(it.qty, 1, 99));
@@ -211,7 +227,6 @@ function buildOrder(body) {
         const p = products.get(ci.product);
         if (!p) throw new HttpError(409, `El combo «${c.name}» ya no está disponible`);
         unit += priceOf(p, mode) * ci.qty;
-        want(p.id, ci.qty * qty);
         return `${ci.qty}× ${p.name}`;
       });
       unit = money(unit * (1 - c.discount / 100));
@@ -222,13 +237,8 @@ function buildOrder(body) {
       const flavor = str(it.flavor, 50);
       if (p.flavors.length && !p.flavors.includes(flavor)) throw new HttpError(400, `Elige un sabor para ${p.name}`);
       const unit = priceOf(p, mode);
-      want(p.id, qty);
       lines.push({ type: 'product', id: p.id, name: p.name, brand: p.brand, presentation: p.presentation, flavor, qty, unit, subtotal: money(unit * qty) });
     }
-  }
-  for (const [id, qty] of wanted) {
-    const p = products.get(id);
-    if (p.stock < qty) throw new HttpError(409, p.stock === 0 ? `${p.name} está agotado` : `${p.name}: solo quedan ${p.stock} unidades`);
   }
   return { mode, lines, total: money(lines.reduce((s, l) => s + l.subtotal, 0)) };
 }
@@ -260,6 +270,7 @@ async function publicApi(req, res, path) {
   if (req.method === 'GET' && path === '/api/products') return json(res, 200, publicProducts());
   if (req.method === 'GET' && path === '/api/combos') return json(res, 200, publicCombos());
   if (req.method === 'GET' && path === '/api/reviews') return json(res, 200, approvedReviews());
+  if (req.method === 'GET' && path === '/api/gallery') return json(res, 200, (await galleryPhotos()).map(({ file, alt }) => ({ file, alt })));
   // Reseña pública: siempre queda pendiente de moderación; el cliente nunca decide approved/visible.
   if (req.method === 'POST' && path === '/api/reviews') {
     if (rateLimit('review:' + clientIp(req), 5, 10 * 60_000)) throw new HttpError(429, 'Demasiadas reseñas enviadas, intenta más tarde');
@@ -413,6 +424,56 @@ async function adminApi(req, res, path) {
       for (const w of PRODUCT_SIZES) await (await productWebp(sharp, buf, w)).toFile(join(publicDir, `${base}-${w}.webp`));
     } catch { throw new HttpError(400, 'La imagen no se pudo procesar'); }
     return json(res, 200, { image: base });
+  }
+
+  // ── fotos de «Nuestro gimnasio» (mismo acceso que las fotos de productos) ──
+  if (req.method === 'GET' && path === '/api/admin/gallery') return json(res, 200, await galleryPhotos());
+  if (req.method === 'POST' && path === '/api/admin/gallery') {
+    const type = req.headers['content-type'] || '';
+    if (!/^image\/(jpeg|png|webp)$/.test(type)) throw new HttpError(415, 'Sube una imagen JPG, PNG o WebP');
+    const buf = await readBody(req, 10 * 1024 * 1024);
+    let alt = '';
+    try { alt = str(decodeURIComponent(req.headers['x-photo-alt'] || ''), 120); } catch { /* texto no válido: se usa el genérico */ }
+    // Nombre generado por el servidor: nunca se usa el nombre ni la ruta que envía el navegador.
+    const file = `gym-${Date.now().toString(36)}-${randomBytes(4).toString('hex')}`;
+    const dir = join(publicDir, 'images', 'gallery');
+    await mkdir(dir, { recursive: true });
+    try {
+      const sharp = await getSharp();
+      const meta = await sharp(buf).metadata(); // formato real del archivo, no solo la cabecera
+      if (!['jpeg', 'png', 'webp'].includes(meta.format) || type !== `image/${meta.format}`) throw new Error('formato');
+      if (!(meta.width >= 300 && meta.height >= 300)) throw new Error('tamaño');
+      for (const w of GALLERY_SIZES) {
+        await sharp(buf).rotate().resize({ width: w, withoutEnlargement: true }).webp({ quality: 78, effort: 5 }).toFile(join(dir, `${file}-${w}.webp`));
+      }
+    } catch {
+      await Promise.all(GALLERY_SIZES.map((w) => rm(join(dir, `${file}-${w}.webp`), { force: true }).catch(() => {})));
+      throw new HttpError(400, 'La imagen no se pudo procesar (JPG, PNG o WebP de al menos 300 px)');
+    }
+    db.prepare('INSERT INTO gallery (file, alt) VALUES (?, ?)').run(file, alt || 'Foto de BodyFactory Gym');
+    return json(res, 201, { file, alt: alt || 'Foto de BodyFactory Gym' });
+  }
+
+  // Quitar una foto de la galería. Solo se aceptan nombres que están en la galería actual (nunca rutas):
+  //  · subida desde el panel → se borra su fila y sus dos WebP (nombre generado por el servidor);
+  //  · foto del sitio → se registra como quitada (el archivo versionado del proyecto no se toca).
+  m = path.match(/^\/api\/admin\/gallery\/([^/]+)$/);
+  if (m && req.method === 'DELETE') {
+    const file = m[1];
+    if (!GALLERY_NAME.test(file)) throw new HttpError(404, 'Foto no encontrada');
+    const row = db.prepare('SELECT id, file FROM gallery WHERE file = ?').get(file);
+    if (row) {
+      db.prepare('DELETE FROM gallery WHERE id = ?').run(row.id);
+      if (/^gym-[a-z0-9]+-[a-f0-9]{8}$/.test(row.file)) {
+        const dir = join(publicDir, 'images', 'gallery');
+        await Promise.all(GALLERY_SIZES.map((w) => rm(join(dir, `${row.file}-${w}.webp`), { force: true }).catch(() => {})));
+      }
+      return json(res, 200, { ok: true });
+    }
+    const removed = db.prepare('SELECT 1 FROM gallery_removed WHERE file = ?').get(file);
+    if (removed || !(await siteGallery()).some((p) => p.file === file)) throw new HttpError(404, 'Foto no encontrada');
+    db.prepare('INSERT INTO gallery_removed (file) VALUES (?)').run(file);
+    return json(res, 200, { ok: true });
   }
 
   if (req.method === 'GET' && path === '/api/admin/orders') {

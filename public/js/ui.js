@@ -24,10 +24,12 @@ const ICONS = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   truck: '<path d="M2 6h11v10H2zM13 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
   instagram: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8"/>',
+  facebook: '<path d="M14 21v-7h3l.5-3.5H14V8.5c0-1 .4-1.7 1.8-1.7H17.6V3.7A23 23 0 0 0 15 3.5c-2.6 0-4.4 1.6-4.4 4.5v2.5H7.7V14h2.9v7z"/>',
   whatsapp: '<path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/><path d="M9 9c0 3 3 6 6 6l1-2-2-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2z"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   warn: '<path d="M12 3 2 20h20z"/><path d="M12 10v5M12 18v.5"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  bank: '<path d="M3 10h18M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18M12 3l9 5H3z"/>',
 };
 export const icon = (name) => new Safe(`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.check}</svg>`);
 export const stars = (n) => {
@@ -53,6 +55,10 @@ export const benefitsOf = (p) => (Array.isArray(p.benefits) ? p.benefits : []).m
 // acompañado de `presentation` ni `serving_size` reales), no como una porción real verificada.
 export const hasServings = (p) => Number(p.servings) > 1;
 export const perServing = (p, mode) => (hasServings(p) ? priceOf(p, mode) / p.servings : null);
+// Mientras no se cargue el inventario real (todo el stock está en 0), no se muestra la etiqueta «Agotado»:
+// el pedido se confirma por WhatsApp. Cambiar a true cuando el stock de la base sea el real.
+const SHOW_OUT_OF_STOCK = false;
+const showStock = (p) => SHOW_OUT_OF_STOCK || p.stock > 0;
 export const stockInfo = (p) => (p.stock <= 0 ? { cls: 'none', label: 'Agotado' } : p.stock <= 8 ? { cls: 'low', label: `Últimas ${p.stock}` } : { cls: '', label: 'En stock' });
 export const ratingOf = (reviews, id) => {
   const rs = reviews.filter((r) => r.product === id);
@@ -103,7 +109,7 @@ export function card(p, i, { mode, wa }) {
   return h`<article class="card ${out ? 'out' : ''}">
     <a class="media" href="${url}" data-action="open" data-id="${p.id}" aria-label="Ver ficha de ${p.name}" tabindex="-1">
       ${p.tag === 'best' ? h`<span class="ribbon">Más vendido</span>` : p.tag === 'new' ? h`<span class="ribbon new">Nuevo</span>` : ''}
-      <span class="stock-pill pill ${st.cls}"><i></i>${st.label}</span>
+      ${showStock(p) ? h`<span class="stock-pill pill ${st.cls}"><i></i>${st.label}</span>` : ''}
       ${img(p.image, { alt: productAlt(p), lazy: i > 3, priority: i === 0 })}
     </a>
     <div class="card-body">
@@ -116,9 +122,7 @@ export function card(p, i, { mode, wa }) {
       </div>
       <div class="card-actions">
         <a class="btn metal small" href="${url}" data-action="open" data-id="${p.id}">Ver ficha</a>
-        ${out && wa
-          ? h`<a class="btn wa small" href="https://wa.me/${wa}?text=${encodeURIComponent(`Hola, quiero consultar disponibilidad de ${p.name}`)}" target="_blank" rel="noopener noreferrer">${icon('whatsapp')} Consultar</a>`
-          : h`<button type="button" class="btn small" data-action="quick-add" data-id="${p.id}" ${out ? 'disabled' : ''}>${icon('cart')} Agregar</button>`}
+        <button type="button" class="btn small" data-action="quick-add" data-id="${p.id}">${icon('cart')} Agregar</button>
       </div>
     </div>
   </article>`;
@@ -147,7 +151,6 @@ const fact = (title, value) => h`<div class="fact"><dt>${title}</dt><dd>${value 
 // ctx: { mode, reviews (solo reales), wa, page (true en la página del producto) }
 export function productSheet(p, { mode, reviews = [], wa, page = false }) {
   const st = stockInfo(p);
-  const out = p.stock <= 0;
   const other = mode === 'retail' ? { l: 'Mayorista', v: p.price_wholesale } : { l: 'Normal', v: p.price_retail };
   const ps = perServing(p, mode);
   const own = reviews.filter((r) => r.product === p.id);
@@ -172,13 +175,11 @@ export function productSheet(p, { mode, reviews = [], wa, page = false }) {
           <span class="price-other">${other.l}: <strong>${usd(other.v)}</strong></span>
           ${ps != null ? h`<span class="per-serving-inline">${usd(ps)}/porción</span>` : ''}
         </div>
-        <div class="pd-status"><span class="pill ${st.cls}"><i></i>${st.label}</span>${r ? h`<span class="rating-line">${stars(r.avg)} ${r.avg.toFixed(1)} (${r.n})</span>` : ''}</div>
+        <div class="pd-status">${showStock(p) ? h`<span class="pill ${st.cls}"><i></i>${st.label}</span>` : ''}${r ? h`<span class="rating-line">${stars(r.avg)} ${r.avg.toFixed(1)} (${r.n})</span>` : ''}</div>
         ${p.flavors.length ? h`<div class="opt"><div class="opt-label">Sabor</div><div class="flavors" role="radiogroup" aria-label="Sabor">${p.flavors.map((f, i) => h`<label><input type="radio" name="flavor" value="${f}" ${i === 0 ? new Safe('checked') : new Safe('')}><span>${f}</span></label>`)}</div></div>` : ''}
         <div class="buyrow">
-          ${out ? '' : h`<div class="qty" role="group" aria-label="Cantidad"><button type="button" data-action="dq" data-d="-1" aria-label="Disminuir cantidad">−</button><output id="dQty">1</output><button type="button" data-action="dq" data-d="1" aria-label="Aumentar cantidad">+</button></div>`}
-          ${out && wa
-            ? h`<a class="btn wa grow" href="https://wa.me/${wa}?text=${encodeURIComponent(`Hola, quiero consultar disponibilidad de ${p.name}`)}" target="_blank" rel="noopener noreferrer">${icon('whatsapp')} Consultar disponibilidad</a>`
-            : h`<button type="button" class="btn grow" data-action="add-detail" data-id="${p.id}" ${out ? 'disabled' : ''}>${icon('cart')} ${out ? 'Agotado' : 'Agregar al carrito'}</button>`}
+          <div class="qty" role="group" aria-label="Cantidad"><button type="button" data-action="dq" data-d="-1" aria-label="Disminuir cantidad">−</button><output id="dQty">1</output><button type="button" data-action="dq" data-d="1" aria-label="Aumentar cantidad">+</button></div>
+          <button type="button" class="btn grow" data-action="add-detail" data-id="${p.id}">${icon('cart')} Agregar al carrito</button>
           <button type="button" class="btn metal" data-action="share" data-id="${p.id}">${icon('share')} Compartir</button>
         </div>
       </div>
