@@ -11,7 +11,7 @@
       ],
       "price_retail": 25,
       "price_wholesale": 20,
-      "stock": 100,
+      "stock": 0,
       "servings": 50,
       "serving_size": "1 scoop (3 g)",
       "image": "img/products/1-m-r-vortex",
@@ -793,59 +793,6 @@
       "active": true
     },
     {
-      "id": "animal-whey-4lb",
-      "name": "100% Whey Protein",
-      "brand": "Animal",
-      "category": "Proteínas",
-      "presentation": "4 lb (1.81 kg)",
-      "flavors": [
-        "Chocolate"
-      ],
-      "price_retail": 62,
-      "price_wholesale": 55,
-      "stock": 0,
-      "servings": 50,
-      "serving_size": "1 scoop",
-      "image": "img/products/animal-whey-4lb",
-      "badges": [
-        "sin-gluten",
-        "sin-azucar"
-      ],
-      "tag": "",
-      "popularity": 85,
-      "macros": {
-        "calories": 0,
-        "protein": 20,
-        "carbs": 0,
-        "sugar": 0,
-        "fat": 0,
-        "sodium": 0
-      },
-      "benefits": [
-        {
-          "icon": "muscle",
-          "text": "20 g de proteína whey por porción"
-        },
-        {
-          "icon": "drop",
-          "text": "4.6 g de BCAA, 0 g de azúcar añadida"
-        },
-        {
-          "icon": "check",
-          "text": "Sin gluten y sin colorantes artificiales"
-        }
-      ],
-      "usage": "Mezcla 1 scoop en agua o leche, después de entrenar o entre comidas. Revisa la etiqueta del envase para la dosis exacta.",
-      "warnings": [
-        "Solo para mayores de 18 años.",
-        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
-        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
-        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
-      ],
-      "description": "Proteína whey en polvo, sabor chocolate.",
-      "active": true
-    },
-    {
       "id": "best-amino-bpi",
       "name": "BEST AMINO BPI",
       "brand": "BPI",
@@ -1225,56 +1172,6 @@
       "active": true
     },
     {
-      "id": "creatine-women",
-      "name": "Creatine for Women",
-      "brand": "Nutrex",
-      "category": "Creatina",
-      "presentation": "30 porciones",
-      "flavors": [
-        "Pink Lemonade"
-      ],
-      "price_retail": 32,
-      "price_wholesale": 27,
-      "stock": 0,
-      "servings": 30,
-      "serving_size": "1 scoop (5 g de creatina)",
-      "image": "img/products/creatine-women",
-      "badges": [],
-      "tag": "",
-      "popularity": 75,
-      "macros": {
-        "calories": 0,
-        "protein": 0,
-        "carbs": 0,
-        "sugar": 0,
-        "fat": 0,
-        "sodium": 0
-      },
-      "benefits": [
-        {
-          "icon": "bolt",
-          "text": "5 g de creatina por porción para rendimiento"
-        },
-        {
-          "icon": "heart",
-          "text": "Con colágeno y aminoácidos: cabello, piel y uñas"
-        },
-        {
-          "icon": "check",
-          "text": "Apoyo cognitivo y hormonal (Body & Beauty)"
-        }
-      ],
-      "usage": "Mezcla 1 scoop en agua o tu bebida favorita una vez al día. Mantente bien hidratada.",
-      "warnings": [
-        "Solo para mayores de 18 años.",
-        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
-        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
-        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
-      ],
-      "description": "Creatina + colágeno + aminoácidos, sabor Pink Lemonade.",
-      "active": true
-    },
-    {
       "id": "eaa",
       "name": "EAA",
       "brand": "NUTREX",
@@ -1477,56 +1374,6 @@
         "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
       ],
       "description": "100% pure isolate protein.",
-      "active": true
-    },
-    {
-      "id": "isofit-5lb",
-      "name": "Isofit Protein",
-      "brand": "Nutrex",
-      "category": "Proteínas",
-      "presentation": "5 lb (2,261 g)",
-      "flavors": [
-        "Vanilla Bean Ice Cream"
-      ],
-      "price_retail": 79,
-      "price_wholesale": 70,
-      "stock": 0,
-      "servings": 70,
-      "serving_size": "1 scoop",
-      "image": "img/products/isofit-5lb",
-      "badges": [],
-      "tag": "best",
-      "popularity": 98,
-      "macros": {
-        "calories": 0,
-        "protein": 0,
-        "carbs": 0,
-        "sugar": 0,
-        "fat": 0,
-        "sodium": 0
-      },
-      "benefits": [
-        {
-          "icon": "muscle",
-          "text": "Aislado de suero (whey isolate) para recuperación muscular"
-        },
-        {
-          "icon": "bolt",
-          "text": "70 porciones por envase"
-        },
-        {
-          "icon": "heart",
-          "text": "Sabor postre: Vanilla Bean Ice Cream"
-        }
-      ],
-      "usage": "Mezcla 1 scoop en agua o leche, después de entrenar o entre comidas. Revisa la etiqueta del envase para la dosis exacta.",
-      "warnings": [
-        "Solo para mayores de 18 años.",
-        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
-        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
-        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
-      ],
-      "description": "Premium dessert whey isolate.",
       "active": true
     },
     {
@@ -1887,56 +1734,6 @@
       "usage": "Tomar 1 cápsula en la mañana y 1 en la tarde. No exceder 1 cápsula por toma ni 2 tomas en 24 horas. No tomar dentro de las 6 horas previas a dormir.",
       "warnings": [],
       "description": "Quemador de grasa de alta intensidad de Nutrex Research en cápsulas líquidas, con Paradoxine® (grains of paradise), N-acetil-L-tirosina, teobromina, Rauwolfia vomitoria y yohimbina HCl (según el fabricante).",
-      "active": true
-    },
-    {
-      "id": "liquid-collagen",
-      "name": "Liquid Collagen",
-      "brand": "ProSupps",
-      "category": "Colágeno",
-      "presentation": "32 fl oz (960 mL)",
-      "flavors": [
-        "Berry"
-      ],
-      "price_retail": 38,
-      "price_wholesale": 33,
-      "stock": 0,
-      "servings": 16,
-      "serving_size": "1 porción líquida",
-      "image": "img/products/liquid-collagen",
-      "badges": [],
-      "tag": "",
-      "popularity": 60,
-      "macros": {
-        "calories": 0,
-        "protein": 0,
-        "carbs": 0,
-        "sugar": 0,
-        "fat": 0,
-        "sodium": 0
-      },
-      "benefits": [
-        {
-          "icon": "muscle",
-          "text": "Recuperación"
-        },
-        {
-          "icon": "heart",
-          "text": "Envejecimiento saludable"
-        },
-        {
-          "icon": "check",
-          "text": "Apoyo articular. Péptidos de colágeno, 16 porciones"
-        }
-      ],
-      "usage": "Toma la porción indicada en la etiqueta, directa o mezclada con agua. Agita antes de usar.",
-      "warnings": [
-        "Solo para mayores de 18 años.",
-        "No recomendado durante el embarazo ni la lactancia. Consulta a tu médico.",
-        "Si tienes una condición médica o tomas medicamentos, consulta a un profesional antes de usar.",
-        "No exceder la dosis recomendada. Mantener fuera del alcance de los niños, en lugar fresco y seco."
-      ],
-      "description": "Suplemento de aminoácidos: péptidos de colágeno (Amino 23).",
       "active": true
     },
     {
@@ -2324,40 +2121,5 @@
       "active": true
     }
   ],
-  "combos": [
-    {
-      "id": "combo-proteina-creatina",
-      "name": "Combo Proteína + Creatina",
-      "note": "Isofit + Creatine for Women",
-      "items": [
-        {
-          "product": "isofit-5lb",
-          "qty": 1
-        },
-        {
-          "product": "creatine-women",
-          "qty": 1
-        }
-      ],
-      "discount": 10,
-      "active": false
-    },
-    {
-      "id": "combo-recuperacion",
-      "name": "Combo Recuperación",
-      "note": "Animal Whey + Liquid Collagen",
-      "items": [
-        {
-          "product": "animal-whey-4lb",
-          "qty": 1
-        },
-        {
-          "product": "liquid-collagen",
-          "qty": 1
-        }
-      ],
-      "discount": 8,
-      "active": false
-    }
-  ]
+  "combos": []
 }
