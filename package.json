@@ -9,12 +9,14 @@
   },
   "scripts": {
     "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server/server.js",
-    "check": "node --check server/server.js && node --check server/pages.js && node --check server/db.js && node --check public/js/app.js && node --check public/admin/admin.js && node --check public/sw.js",
+    "check": "node --check server/server.js && node --check server/pages.js && node --check server/db.js && node --check public/js/app.js && node --check public/admin/admin.js && node --check public/sw.js && node --check server/postgres.js && node --check server/postgres-schema.js && node --check server/postgres-seed.js && node --check scripts/init-postgres.mjs",
     "images": "node scripts/optimize-images.mjs",
     "backup:db": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/backup-db.mjs",
-    "export:catalog": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/export-catalog.mjs"
+    "export:catalog": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/export-catalog.mjs",
+    "postgres:init": "node scripts/init-postgres.mjs"
   },
   "dependencies": {
+    "pg": "^8.23.1",
     "sharp": "^0.35.4"
   }
 }
