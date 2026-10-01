@@ -4,7 +4,8 @@ import { dirname, join, extname, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, createHash } from 'node:crypto';
 import { gzipSync, brotliCompressSync, constants as zc } from 'node:zlib';
-import { db, hydrate, saveProduct, hashPassword, verifyPassword, normalizeUsername, MIN_PASSWORD, initialPasswordFile } from './db.js';
+import { hydrate, saveProduct, hashPassword, verifyPassword, normalizeUsername, MIN_PASSWORD, initialPasswordFile } from './db.js';
+import { pool, queryOne, queryAll, execute, transaction, testPostgresConnection } from './postgres.js';
 import { esc, categoryFromSlug, productUrl, normalizeCategory, categoryUrl, CATEGORY_ORDER, ASSET_V } from '../public/js/ui.js'; // mismas plantillas que el navegador
 import { productWebp, PRODUCT_SIZES } from './images.js';
 import { buildCatalogPage, buildProductPage, buildNotFound, findProductBySlug, findProductById, footNav, drawerCats, imagePreload, safeJson, DISCLAIMER } from './pages.js';
@@ -77,19 +78,18 @@ async function readJson(req) {
 const sessions = new Map();
 const SESSION_MS = 8 * 60 * 60 * 1000;
 const attempts = new Map(); // clave -> { n, until }
-const accountStmt = db.prepare('SELECT username, role, active FROM admins WHERE username = ?');
 
 function cookieOf(req, name) {
   const m = (req.headers.cookie || '').split(/;\s*/).find((c) => c.startsWith(name + '='));
   if (!m) return null;
   try { return decodeURIComponent(m.slice(name.length + 1)); } catch { return null; }
 }
-function sessionOf(req) {
+async function sessionOf(req) {
   const t = cookieOf(req, 'bf_session');
   const s = t && sessions.get(t);
   if (!s) return null;
   if (s.exp < Date.now()) { sessions.delete(t); return null; }
-  const acc = accountStmt.get(s.user);
+  const acc = await queryOne('SELECT username, role, active FROM admins WHERE username = $1', [s.user]);
   if (!acc || !acc.active) { sessions.delete(t); return null; }
   return { token: t, user: acc.username, role: acc.role };
 }
@@ -97,8 +97,8 @@ function sessionOf(req) {
 function dropSessions(user, exceptToken = null) {
   for (const [t, s] of sessions) if (s.user === user && t !== exceptToken) sessions.delete(t);
 }
-function requireAdmin(req) {
-  const s = sessionOf(req);
+async function requireAdmin(req) {
+  const s = await sessionOf(req);
   if (!s) throw new HttpError(401, 'No autorizado');
   // Defensa CSRF: los formularios entre sitios no pueden enviar este encabezado.
   if (req.method !== 'GET' && req.headers['x-requested-with'] !== 'fetch') throw new HttpError(403, 'Solicitud no válida');
@@ -159,10 +159,8 @@ function normalizeProduct(b, id) {
 }
 
 // ───────────── API pública ─────────────
-const publicProductsStmt = db.prepare("SELECT * FROM products WHERE active = 1 ORDER BY popularity DESC, CASE WHEN image <> '' THEN 0 ELSE 1 END, name");
-const publicCombosStmt = db.prepare('SELECT * FROM combos WHERE active = 1');
-const publicProducts = () => publicProductsStmt.all().map(hydrate);
-const publicCombos = () => publicCombosStmt.all().map((c) => ({ ...c, items: JSON.parse(c.items), active: !!c.active }));
+const publicProducts = async () => (await queryAll("SELECT * FROM products WHERE active = 1 ORDER BY popularity DESC, CASE WHEN image <> '' THEN 0 ELSE 1 END, name")).map(hydrate);
+const publicCombos = async () => (await queryAll('SELECT * FROM combos WHERE active = 1')).map((c) => ({ ...c, items: JSON.parse(c.items), active: !!c.active }));
 
 // Fotos de «Nuestro gimnasio»: las del sitio (data/site.json, «gallery») menos las quitadas desde el panel
 // (tabla gallery_removed; los archivos versionados no se borran) + las subidas desde el panel (tabla gallery).
@@ -175,46 +173,40 @@ async function siteGallery() {
   } catch { return []; }
 }
 async function galleryPhotos() {
-  const removed = new Set(db.prepare('SELECT file FROM gallery_removed').all().map((r) => r.file));
+  const removed = new Set((await queryAll('SELECT file FROM gallery_removed')).map((r) => r.file));
   const site = (await siteGallery()).filter((p) => !removed.has(p.file)).map((p) => ({ ...p, origin: 'site' }));
-  const uploads = db.prepare('SELECT file, alt FROM gallery ORDER BY id').all().map((p) => ({ ...p, origin: 'upload' }));
+  const uploads = (await queryAll('SELECT file, alt FROM gallery ORDER BY id')).map((p) => ({ ...p, origin: 'upload' }));
   return [...site, ...uploads];
 }
 
-const approvedReviewsStmt = db.prepare("SELECT id, product, name, stars, text, created_at FROM reviews WHERE status = 'approved' AND name <> 'Cliente de ejemplo' AND text NOT LIKE 'Texto de ejemplo:%' ORDER BY id DESC");
-const approvedReviews = () => approvedReviewsStmt.all();
+const approvedReviews = () => queryAll("SELECT id, product, name, stars, text, created_at FROM reviews WHERE status = 'approved' AND name <> 'Cliente de ejemplo' AND text NOT LIKE 'Texto de ejemplo:%' ORDER BY id DESC");
 
 const priceOf = (p, mode) => (mode === 'wholesale' ? p.price_wholesale : p.price_retail);
 
 // ───────────── catálogo en caché (una sola respuesta para todo el frontend) ─────────────
-let catalog = null; // { json, data, etag, dataVersion }
-const invalidateCatalog = () => { catalog = null; };
-const dataVersion = () => Number(db.prepare('PRAGMA data_version').get()?.data_version || 0);
-function getCatalog() {
-  // PRAGMA data_version cambia cuando otra conexión modifica SQLite. Esto evita que
-  // una actualización manual de la base deje el catálogo público sirviendo datos viejos
-  // hasta reiniciar Node. Los cambios hechos por este mismo proceso siguen usando
-  // invalidateCatalog() en las rutas admin.
-  const version = dataVersion();
-  if (!catalog || catalog.dataVersion !== version) {
-    const data = {
-      products: publicProducts(),
-      combos: publicCombos(),
-      reviews: approvedReviews(),
-    };
-    const json = JSON.stringify(data);
-    catalog = { json, data, etag: `"${createHash('sha1').update(json).digest('base64url').slice(0, 16)}"`, dataVersion: version };
-  }
-  return catalog;
+let catalog = null; // { json, data, etag }
+let catalogGen = 0; // sube con cada invalidación: una lectura que empezó antes no deja una caché vieja
+const invalidateCatalog = () => { catalog = null; catalogGen++; };
+// Los cambios hechos desde el panel invalidan la caché (invalidateCatalog en adminApi). Una edición directa
+// en PostgreSQL por fuera de la app se ve al reiniciar el proceso.
+async function getCatalog() {
+  if (catalog) return catalog;
+  const gen = catalogGen;
+  const [products, combos, reviews] = await Promise.all([publicProducts(), publicCombos(), approvedReviews()]);
+  const data = { products, combos, reviews };
+  const json = JSON.stringify(data);
+  const built = { json, data, etag: `"${createHash('sha1').update(json).digest('base64url').slice(0, 16)}"` };
+  if (gen === catalogGen) catalog = built;
+  return built;
 }
 
-function buildOrder(body) {
+async function buildOrder(body) {
   const mode = body.mode === 'wholesale' ? 'wholesale' : 'retail';
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) throw new HttpError(400, 'El carrito está vacío');
   // Precios se leen de la base en el momento del pedido (nunca de la caché ni del navegador).
   // La disponibilidad no bloquea el pedido: se confirma por WhatsApp al recibirlo.
-  const products = new Map(publicProducts().map((p) => [p.id, p]));
-  const combos = new Map(publicCombos().map((c) => [c.id, c]));
+  const products = new Map((await publicProducts()).map((p) => [p.id, p]));
+  const combos = new Map((await publicCombos()).map((c) => [c.id, c]));
   const lines = [];
 
   for (const it of body.items) {
@@ -243,14 +235,13 @@ function buildOrder(body) {
   return { mode, lines, total: money(lines.reduce((s, l) => s + l.subtotal, 0)) };
 }
 
-function createOrder(body) {
-  const { mode, lines, total } = buildOrder(body);
-  const info = db.prepare('INSERT INTO orders (price_mode, customer_name, notes, lines, total) VALUES (?,?,?,?,?)')
-    .run(mode, str(body.name, 80), str(body.notes, 300), JSON.stringify(lines), total);
-  const id = Number(info.lastInsertRowid);
+async function createOrder(body) {
+  const { mode, lines, total } = await buildOrder(body);
+  const { id } = await queryOne('INSERT INTO orders (price_mode, customer_name, notes, lines, total) VALUES ($1,$2,$3,$4,$5) RETURNING id',
+    [mode, str(body.name, 80), str(body.notes, 300), JSON.stringify(lines), total]);
   const d = new Date();
   const code = `BF-${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${String(id).padStart(4, '0')}`;
-  db.prepare('UPDATE orders SET code = ? WHERE id = ?').run(code, id);
+  await execute('UPDATE orders SET code = $1 WHERE id = $2', [code, id]);
   return { code, mode, lines, total };
 }
 
@@ -264,12 +255,12 @@ function rateLimit(key, max, windowMs) {
 
 async function publicApi(req, res, path) {
   if (req.method === 'GET' && path === '/api/catalog') {
-    const c = getCatalog();
+    const c = await getCatalog();
     return sendCached(req, res, path, Buffer.from(c.json), 'application/json; charset=utf-8', c.etag, 'no-cache');
   }
-  if (req.method === 'GET' && path === '/api/products') return json(res, 200, publicProducts());
-  if (req.method === 'GET' && path === '/api/combos') return json(res, 200, publicCombos());
-  if (req.method === 'GET' && path === '/api/reviews') return json(res, 200, approvedReviews());
+  if (req.method === 'GET' && path === '/api/products') return json(res, 200, await publicProducts());
+  if (req.method === 'GET' && path === '/api/combos') return json(res, 200, await publicCombos());
+  if (req.method === 'GET' && path === '/api/reviews') return json(res, 200, await approvedReviews());
   if (req.method === 'GET' && path === '/api/gallery') return json(res, 200, (await galleryPhotos()).map(({ file, alt }) => ({ file, alt })));
   // Reseña pública: siempre queda pendiente de moderación; el cliente nunca decide approved/visible.
   if (req.method === 'POST' && path === '/api/reviews') {
@@ -281,14 +272,14 @@ async function publicApi(req, res, path) {
     const text = str(b.text, 1000);
     if (text.length < 10) throw new HttpError(400, 'La reseña debe tener al menos 10 caracteres');
     const product = str(b.product, 60);
-    if (product && !db.prepare('SELECT 1 FROM products WHERE id = ?').get(product)) throw new HttpError(400, 'Producto inválido');
+    if (product && !(await queryOne('SELECT 1 FROM products WHERE id = $1', [product]))) throw new HttpError(400, 'Producto inválido');
     if (b.consent !== true) throw new HttpError(400, 'Debes aceptar que tu reseña pueda publicarse');
-    db.prepare("INSERT INTO reviews (product, name, stars, text, status) VALUES (?,?,?,?,'pending')").run(product, name, stars, text);
+    await execute("INSERT INTO reviews (product, name, stars, text, status) VALUES ($1,$2,$3,$4,'pending')", [product, name, stars, text]);
     return json(res, 201, { ok: true });
   }
   if (req.method === 'POST' && path === '/api/orders') {
     if (rateLimit('order:' + clientIp(req), 20, 60_000)) throw new HttpError(429, 'Demasiados pedidos, intenta en un minuto');
-    return json(res, 201, createOrder(await readJson(req)));
+    return json(res, 201, await createOrder(await readJson(req)));
   }
   return false;
 }
@@ -304,7 +295,7 @@ async function adminApi(req, res, path) {
     const userKey = 'login-user:' + uname;
     const blocked = (k, max) => { const a = attempts.get(k); return a && Date.now() < a.until && a.n >= max; };
     if (blocked(ipKey, 5) || blocked(userKey, 10)) throw new HttpError(429, 'Demasiados intentos. Espera 15 minutos.');
-    const admin = db.prepare('SELECT username, salt, hash, role, active FROM admins WHERE lower(username) = ?').get(uname);
+    const admin = await queryOne('SELECT username, salt, hash, role, active FROM admins WHERE lower(username) = $1', [uname]);
     // Mismo tiempo de respuesta y mismo mensaje para usuario inexistente, desactivado o contraseña incorrecta.
     const valid = admin ? verifyPassword(String(password ?? ''), admin) : (hashPassword('x'), false);
     if (!valid || !admin.active) {
@@ -336,21 +327,21 @@ async function adminApi(req, res, path) {
 
   // Comprobación de sesión al abrir el panel: responde 200 también sin sesión (evita un 401 en consola).
   if (req.method === 'GET' && path === '/api/admin/me') {
-    const s = sessionOf(req);
+    const s = await sessionOf(req);
     return json(res, 200, s ? { user: s.user, role: s.role } : { user: null });
   }
 
-  const session = requireAdmin(req);
+  const session = await requireAdmin(req);
   if (req.method !== 'GET') res.on('finish', invalidateCatalog); // cualquier cambio del panel renueva el catálogo
 
 
   if (req.method === 'POST' && path === '/api/admin/password') {
     const { current, next } = await readJson(req);
-    const admin = db.prepare('SELECT username, salt, hash FROM admins WHERE username = ?').get(session.user);
-    if (!verifyPassword(String(current ?? ''), admin)) throw new HttpError(400, 'La contraseña actual no coincide');
+    const admin = await queryOne('SELECT username, salt, hash FROM admins WHERE username = $1', [session.user]);
+    if (!admin || !verifyPassword(String(current ?? ''), admin)) throw new HttpError(400, 'La contraseña actual no coincide');
     const pw = validPassword(next);
     const { salt, hash } = hashPassword(pw);
-    db.prepare('UPDATE admins SET salt = ?, hash = ? WHERE username = ?').run(salt, hash, session.user);
+    await execute('UPDATE admins SET salt = $1, hash = $2 WHERE username = $3', [salt, hash, session.user]);
     dropSessions(session.user, session.token); // cierra la cuenta en otros dispositivos
     await rm(initialPasswordFile, { force: true }).catch(() => {});
     return json(res, 200, { ok: true });
@@ -363,15 +354,15 @@ async function adminApi(req, res, path) {
   }
 
   if (req.method === 'GET' && path === '/api/admin/products') {
-    return json(res, 200, db.prepare('SELECT * FROM products ORDER BY name').all().map(hydrate));
+    return json(res, 200, (await queryAll('SELECT * FROM products ORDER BY name')).map(hydrate));
   }
   if (req.method === 'POST' && path === '/api/admin/products') {
     const body = await readJson(req);
     const base = slugify(str(body.name, 120)) || 'producto';
     let id = base;
-    for (let i = 2; db.prepare('SELECT 1 FROM products WHERE id = ?').get(id); i++) id = `${base}-${i}`;
-    saveProduct(normalizeProduct(body, id), { create: true });
-    return json(res, 201, hydrate(db.prepare('SELECT * FROM products WHERE id = ?').get(id)));
+    for (let i = 2; await queryOne('SELECT 1 FROM products WHERE id = $1', [id]); i++) id = `${base}-${i}`;
+    await saveProduct(normalizeProduct(body, id), { create: true });
+    return json(res, 201, hydrate(await queryOne('SELECT * FROM products WHERE id = $1', [id])));
   }
   // Cambio masivo de visibilidad (solo IDs exactos que el cliente ya tiene en pantalla; nunca por página/número).
   if (req.method === 'POST' && path === '/api/admin/products/bulk-active') {
@@ -380,41 +371,44 @@ async function adminApi(req, res, path) {
     if (!ids.length || ids.length > 200) throw new HttpError(400, 'Lista de productos inválida');
     if (typeof body.active !== 'boolean') throw new HttpError(400, 'Estado inválido');
     const target = body.active ? 1 : 0;
-    const existing = db.prepare(`SELECT id FROM products WHERE id IN (${ids.map(() => '?').join(',')})`).all(...ids).map((r) => r.id);
-    if (existing.length !== ids.length) {
-      const faltantes = ids.filter((id) => !existing.includes(id));
-      throw new HttpError(409, `Algunos productos ya no existen o cambiaron: ${faltantes.join(', ')}. Refresca la página e intenta de nuevo.`);
-    }
-    db.exec('BEGIN IMMEDIATE');
     try {
-      const up = db.prepare('UPDATE products SET active = ?, updated_at = datetime(\'now\') WHERE id = ?');
-      let changed = 0;
-      for (const id of ids) changed += up.run(target, id).changes;
-      if (changed !== ids.length) throw new Error(`Se esperaban ${ids.length} cambios y se aplicaron ${changed}`);
-      db.exec('COMMIT');
+      // Una sola transacción: se comprueba que existan todos los IDs (bloqueando las filas) y se actualizan juntos.
+      const changed = await transaction(async (client) => {
+        const found = await client.query(`SELECT id FROM products WHERE id IN (${ids.map((_, i) => `$${i + 1}`).join(',')}) FOR UPDATE`, ids);
+        if (found.rowCount !== ids.length) {
+          const existing = new Set(found.rows.map((r) => r.id));
+          const faltantes = ids.filter((id) => !existing.has(id));
+          throw new HttpError(409, `Algunos productos ya no existen o cambiaron: ${faltantes.join(', ')}. Refresca la página e intenta de nuevo.`);
+        }
+        const up = await client.query(`UPDATE products SET active = $1, updated_at = CURRENT_TIMESTAMP WHERE id IN (${ids.map((_, i) => `$${i + 2}`).join(',')})`, [target, ...ids]);
+        if (up.rowCount !== ids.length) throw new Error(`Se esperaban ${ids.length} cambios y se aplicaron ${up.rowCount}`);
+        return up.rowCount;
+      });
       return json(res, 200, { ok: true, changed, ids, active: body.active });
     } catch (e) {
-      db.exec('ROLLBACK');
+      if (e instanceof HttpError) throw e;
       throw new HttpError(500, 'No se pudo aplicar el cambio masivo; no se modificó nada. ' + e.message);
     }
   }
   let m = path.match(/^\/api\/admin\/products\/([a-z0-9-]+)$/);
   if (m) {
     const id = m[1];
-    if (!db.prepare('SELECT 1 FROM products WHERE id = ?').get(id)) throw new HttpError(404, 'Producto no encontrado');
+    if (!(await queryOne('SELECT 1 FROM products WHERE id = $1', [id]))) throw new HttpError(404, 'Producto no encontrado');
     if (req.method === 'PUT') {
-      saveProduct(normalizeProduct(await readJson(req), id), { create: false });
-      return json(res, 200, hydrate(db.prepare('SELECT * FROM products WHERE id = ?').get(id)));
+      await saveProduct(normalizeProduct(await readJson(req), id), { create: false });
+      return json(res, 200, hydrate(await queryOne('SELECT * FROM products WHERE id = $1', [id])));
     }
     if (req.method === 'DELETE') {
-      db.prepare('DELETE FROM products WHERE id = ?').run(id);
-      db.prepare('DELETE FROM reviews WHERE product = ?').run(id);
+      await transaction(async (client) => {
+        await client.query('DELETE FROM products WHERE id = $1', [id]);
+        await client.query('DELETE FROM reviews WHERE product = $1', [id]);
+      });
       return json(res, 200, { ok: true });
     }
   }
   m = path.match(/^\/api\/admin\/products\/([a-z0-9-]+)\/image$/);
   if (m && req.method === 'POST') {
-    if (!db.prepare('SELECT 1 FROM products WHERE id = ?').get(m[1])) throw new HttpError(404, 'Producto no encontrado');
+    if (!(await queryOne('SELECT 1 FROM products WHERE id = $1', [m[1]]))) throw new HttpError(404, 'Producto no encontrado');
     if (!/^image\/(jpeg|png|webp)$/.test(req.headers['content-type'] || '')) throw new HttpError(415, 'Sube una imagen JPG, PNG o WebP');
     const buf = await readBody(req, 10 * 1024 * 1024);
     const base = `img/products/${m[1]}-${Date.now().toString(36)}`;
@@ -450,7 +444,7 @@ async function adminApi(req, res, path) {
       await Promise.all(GALLERY_SIZES.map((w) => rm(join(dir, `${file}-${w}.webp`), { force: true }).catch(() => {})));
       throw new HttpError(400, 'La imagen no se pudo procesar (JPG, PNG o WebP de al menos 300 px)');
     }
-    db.prepare('INSERT INTO gallery (file, alt) VALUES (?, ?)').run(file, alt || 'Foto de BodyFactory Gym');
+    await execute('INSERT INTO gallery (file, alt) VALUES ($1, $2)', [file, alt || 'Foto de BodyFactory Gym']);
     return json(res, 201, { file, alt: alt || 'Foto de BodyFactory Gym' });
   }
 
@@ -461,37 +455,37 @@ async function adminApi(req, res, path) {
   if (m && req.method === 'DELETE') {
     const file = m[1];
     if (!GALLERY_NAME.test(file)) throw new HttpError(404, 'Foto no encontrada');
-    const row = db.prepare('SELECT id, file FROM gallery WHERE file = ?').get(file);
+    const row = await queryOne('SELECT id, file FROM gallery WHERE file = $1', [file]);
     if (row) {
-      db.prepare('DELETE FROM gallery WHERE id = ?').run(row.id);
+      await execute('DELETE FROM gallery WHERE id = $1', [row.id]);
       if (/^gym-[a-z0-9]+-[a-f0-9]{8}$/.test(row.file)) {
         const dir = join(publicDir, 'images', 'gallery');
         await Promise.all(GALLERY_SIZES.map((w) => rm(join(dir, `${row.file}-${w}.webp`), { force: true }).catch(() => {})));
       }
       return json(res, 200, { ok: true });
     }
-    const removed = db.prepare('SELECT 1 FROM gallery_removed WHERE file = ?').get(file);
+    const removed = await queryOne('SELECT 1 FROM gallery_removed WHERE file = $1', [file]);
     if (removed || !(await siteGallery()).some((p) => p.file === file)) throw new HttpError(404, 'Foto no encontrada');
-    db.prepare('INSERT INTO gallery_removed (file) VALUES (?)').run(file);
+    await execute('INSERT INTO gallery_removed (file) VALUES ($1)', [file]);
     return json(res, 200, { ok: true });
   }
 
   if (req.method === 'GET' && path === '/api/admin/orders') {
-    const rows = db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 300').all().map((o) => ({ ...o, lines: JSON.parse(o.lines) }));
+    const rows = (await queryAll('SELECT * FROM orders ORDER BY id DESC LIMIT 300')).map((o) => ({ ...o, lines: JSON.parse(o.lines) }));
     return json(res, 200, rows);
   }
   m = path.match(/^\/api\/admin\/orders\/(\d+)$/);
   if (m && req.method === 'PATCH') {
     const { status } = await readJson(req);
     if (!ORDER_STATUS.has(status)) throw new HttpError(400, 'Estado inválido');
-    db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, Number(m[1]));
+    await execute('UPDATE orders SET status = $1 WHERE id = $2', [status, Number(m[1])]);
     return json(res, 200, { ok: true });
   }
   if (m && req.method === 'DELETE') {
     const { password } = await readJson(req);
-    const admin = db.prepare('SELECT salt, hash FROM admins WHERE username = ?').get(session.user);
+    const admin = await queryOne('SELECT salt, hash FROM admins WHERE username = $1', [session.user]);
     if (!admin || !verifyPassword(String(password ?? ''), admin)) throw new HttpError(403, 'Contraseña incorrecta');
-    const info = db.prepare('DELETE FROM orders WHERE id = ?').run(Number(m[1]));
+    const info = await execute('DELETE FROM orders WHERE id = $1', [Number(m[1])]);
     if (!info.changes) throw new HttpError(404, 'Pedido no encontrado');
     return json(res, 200, { ok: true });
   }
@@ -500,32 +494,32 @@ async function adminApi(req, res, path) {
     const status = new URL(req.url, 'http://x').searchParams.get('status');
     const REVIEW_STATUSES = new Set(['pending', 'approved', 'rejected']);
     if (status && REVIEW_STATUSES.has(status)) {
-      return json(res, 200, db.prepare('SELECT * FROM reviews WHERE status = ? ORDER BY id DESC').all(status));
+      return json(res, 200, await queryAll('SELECT * FROM reviews WHERE status = $1 ORDER BY id DESC', [status]));
     }
-    return json(res, 200, db.prepare('SELECT * FROM reviews ORDER BY id DESC').all());
+    return json(res, 200, await queryAll('SELECT * FROM reviews ORDER BY id DESC'));
   }
   if (req.method === 'POST' && path === '/api/admin/reviews') {
     const b = await readJson(req);
     const product = str(b.product, 60);
-    if (product && !db.prepare('SELECT 1 FROM products WHERE id = ?').get(product)) throw new HttpError(400, 'Producto inválido');
+    if (product && !(await queryOne('SELECT 1 FROM products WHERE id = $1', [product]))) throw new HttpError(400, 'Producto inválido');
     const name = str(b.name, 60);
     if (!name) throw new HttpError(400, 'Falta el nombre del cliente');
     // Una reseña que el propio admin agrega manualmente entra ya aprobada (no viene del público).
-    db.prepare("INSERT INTO reviews (product, name, stars, text, status) VALUES (?,?,?,?,'approved')")
-      .run(product, name, Math.floor(num(b.stars, 1, 5)), str(b.text, 500));
+    await execute("INSERT INTO reviews (product, name, stars, text, status) VALUES ($1,$2,$3,$4,'approved')",
+      [product, name, Math.floor(num(b.stars, 1, 5)), str(b.text, 500)]);
     return json(res, 201, { ok: true });
   }
   m = path.match(/^\/api\/admin\/reviews\/(\d+)\/status$/);
   if (m && req.method === 'PATCH') {
     const { status } = await readJson(req);
     if (!['pending', 'approved', 'rejected'].includes(status)) throw new HttpError(400, 'Estado inválido');
-    if (!db.prepare('SELECT 1 FROM reviews WHERE id = ?').get(Number(m[1]))) throw new HttpError(404, 'Reseña no encontrada');
-    db.prepare('UPDATE reviews SET status = ? WHERE id = ?').run(status, Number(m[1]));
+    if (!(await queryOne('SELECT 1 FROM reviews WHERE id = $1', [Number(m[1])]))) throw new HttpError(404, 'Reseña no encontrada');
+    await execute('UPDATE reviews SET status = $1 WHERE id = $2', [status, Number(m[1])]);
     return json(res, 200, { ok: true });
   }
   m = path.match(/^\/api\/admin\/reviews\/(\d+)$/);
   if (m && req.method === 'DELETE') {
-    db.prepare('DELETE FROM reviews WHERE id = ?').run(Number(m[1]));
+    await execute('DELETE FROM reviews WHERE id = $1', [Number(m[1])]);
     return json(res, 200, { ok: true });
   }
   return false;
@@ -534,9 +528,9 @@ async function adminApi(req, res, path) {
 // ───────────── usuarios del panel ─────────────
 // Nunca se devuelven hash, sal ni tokens. Todas las comprobaciones de permisos se hacen aquí, en el servidor.
 const ROLES = new Set(['admin', 'staff']);
-const listUsers = () => db.prepare('SELECT username, role, active, created_at FROM admins ORDER BY role, username').all()
+const listUsers = async () => (await queryAll('SELECT username, role, active, created_at FROM admins ORDER BY role, username'))
   .map((u) => ({ ...u, active: !!u.active }));
-const activeAdmins = () => db.prepare("SELECT COUNT(*) AS n FROM admins WHERE role = 'admin' AND active = 1").get().n;
+const activeAdmins = async () => (await queryOne("SELECT COUNT(*)::integer AS n FROM admins WHERE role = 'admin' AND active = 1")).n;
 function validPassword(p) {
   const pw = String(p ?? '');
   if (pw.length < MIN_PASSWORD) throw new HttpError(400, `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres`);
@@ -546,33 +540,33 @@ function validPassword(p) {
 
 async function usersApi(req, res, path, session) {
   if (path === '/api/admin/users') {
-    if (req.method === 'GET') return json(res, 200, listUsers());
+    if (req.method === 'GET') return json(res, 200, await listUsers());
     if (req.method === 'POST') {
       const b = await readJson(req);
       const username = normalizeUsername(b.username);
       if (!username) throw new HttpError(400, 'Usuario inválido: 3 a 32 caracteres (letras, números, punto, guion o guion bajo)');
       const role = ROLES.has(b.role) ? b.role : 'staff';
       const pw = validPassword(b.password);
-      if (db.prepare('SELECT 1 FROM admins WHERE lower(username) = ?').get(username)) throw new HttpError(409, 'Ese nombre de usuario ya existe');
+      if (await queryOne('SELECT 1 FROM admins WHERE lower(username) = $1', [username])) throw new HttpError(409, 'Ese nombre de usuario ya existe');
       const { salt, hash } = hashPassword(pw);
-      db.prepare("INSERT INTO admins (username, salt, hash, role, active, created_at) VALUES (?,?,?,?,1,datetime('now'))").run(username, salt, hash, role);
-      return json(res, 201, listUsers().find((u) => u.username === username));
+      await execute('INSERT INTO admins (username, salt, hash, role, active, created_at) VALUES ($1,$2,$3,$4,1,CURRENT_TIMESTAMP)', [username, salt, hash, role]);
+      return json(res, 201, (await listUsers()).find((u) => u.username === username));
     }
     throw new HttpError(405, 'Método no permitido');
   }
   const m = path.match(/^\/api\/admin\/users\/([^/]+)(\/password)?$/);
   let target = null;
   try { target = m && normalizeUsername(decodeURIComponent(m[1])); } catch { /* inválido */ }
-  const acc = target && db.prepare('SELECT username, role, active FROM admins WHERE username = ?').get(target);
+  const acc = target && await queryOne('SELECT username, role, active FROM admins WHERE username = $1', [target]);
   if (!acc) throw new HttpError(404, 'Usuario no encontrado');
   const self = acc.username === session.user;
-  const isLastAdmin = acc.role === 'admin' && acc.active && activeAdmins() <= 1;
+  const isLastAdmin = acc.role === 'admin' && acc.active && (await activeAdmins()) <= 1;
 
   if (m[2] && req.method === 'POST') { // restablecer contraseña de otra cuenta
     if (self) throw new HttpError(400, 'Para tu propia cuenta usa «Cambiar contraseña»');
     const pw = validPassword((await readJson(req)).password);
     const { salt, hash } = hashPassword(pw);
-    db.prepare('UPDATE admins SET salt = ?, hash = ? WHERE username = ?').run(salt, hash, acc.username);
+    await execute('UPDATE admins SET salt = $1, hash = $2 WHERE username = $3', [salt, hash, acc.username]);
     dropSessions(acc.username);
     return json(res, 200, { ok: true });
   }
@@ -582,16 +576,16 @@ async function usersApi(req, res, path, session) {
     const active = typeof b.active === 'boolean' ? b.active : !!acc.active;
     const role = ROLES.has(b.role) ? b.role : acc.role;
     if (isLastAdmin && (!active || role !== 'admin')) throw new HttpError(409, 'Debe quedar al menos un administrador activo');
-    db.prepare('UPDATE admins SET active = ?, role = ? WHERE username = ?').run(active ? 1 : 0, role, acc.username);
+    await execute('UPDATE admins SET active = $1, role = $2 WHERE username = $3', [active ? 1 : 0, role, acc.username]);
     if (!active) dropSessions(acc.username);
-    return json(res, 200, listUsers().find((u) => u.username === acc.username));
+    return json(res, 200, (await listUsers()).find((u) => u.username === acc.username));
   }
   if (!m[2] && req.method === 'DELETE') {
     if (self) throw new HttpError(400, 'No puedes eliminar tu propia cuenta');
     if (isLastAdmin) throw new HttpError(409, 'Debe quedar al menos un administrador activo');
-    const me = db.prepare('SELECT salt, hash FROM admins WHERE username = ?').get(session.user);
-    if (!verifyPassword(String((await readJson(req)).password ?? ''), me)) throw new HttpError(403, 'Tu contraseña no es correcta');
-    db.prepare('DELETE FROM admins WHERE username = ?').run(acc.username);
+    const me = await queryOne('SELECT salt, hash FROM admins WHERE username = $1', [session.user]);
+    if (!me || !verifyPassword(String((await readJson(req)).password ?? ''), me)) throw new HttpError(403, 'Tu contraseña no es correcta');
+    await execute('DELETE FROM admins WHERE username = $1', [acc.username]);
     dropSessions(acc.username);
     return json(res, 200, { ok: true });
   }
@@ -657,8 +651,7 @@ const pageCache = new Map(); // clave -> { html, etag }
 const noIndexHeaders = INDEXABLE ? {} : { 'X-Robots-Tag': 'noindex, nofollow' };
 
 async function renderPage(req, kind, opts) {
-  const [idx, siteSt, v] = await Promise.all([stat(indexPath), stat(sitePath), buildId()]);
-  const c = getCatalog();
+  const [idx, siteSt, v, c] = await Promise.all([stat(indexPath), stat(sitePath), buildId(), getCatalog()]);
   const origin = originOf(req);
   const key = `${kind}|${opts.p ? opts.p.id : JSON.stringify(opts)}|${origin}|${c.etag}|${idx.mtimeMs}|${siteSt.mtimeMs}|${v}`;
   const hit = pageCache.get(key);
@@ -719,7 +712,7 @@ async function servePages(req, res, url) {
   }
   m = path.match(/^\/producto\/([a-z0-9-]+)\/?$/);
   if (m) {
-    const { products } = getCatalog().data;
+    const { products } = (await getCatalog()).data;
     const p = findProductBySlug(products, m[1]);
     if (p) {
       if (path.endsWith('/')) return redirect(res, productUrl(p));
@@ -737,7 +730,7 @@ async function servePages(req, res, url) {
   }
   if (path === '/sitemap.xml') {
     const origin = originOf(req);
-    const { products } = getCatalog().data;
+    const { products } = (await getCatalog()).data;
     const present = new Set(products.map((p) => normalizeCategory(p.category)));
     const today = new Date().toISOString().slice(0, 10);
     const urls = [
@@ -786,7 +779,7 @@ async function serveStatic(req, res, path) {
   sendCached(req, res, file, body, type, etag, cacheControl, extra);
 }
 
-createServer(async (req, res) => {
+const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://x');
     const path = url.pathname;
@@ -803,6 +796,35 @@ createServer(async (req, res) => {
     if (res.headersSent) return res.end();
     json(res, status, { error: status === 500 ? 'Error interno' : e.message });
   }
-}).listen(PORT, () => {
-  console.log(`BodyFactory Gym → http://localhost:${PORT}   (admin: /admin)   indexación: ${INDEXABLE ? `SÍ (${SITE_URL})` : 'NO (define SITE_URL y ALLOW_INDEXING=true en producción)'}`);
+});
+
+// Arranque: sin PostgreSQL no se acepta tráfico (no hay respaldo en SQLite).
+async function start() {
+  const info = await testPostgresConnection();
+  console.log(`PostgreSQL conectado (base: ${info.database}).`);
+  pool.on('error', (e) => console.error('PostgreSQL (conexión inactiva):', e.message)); // sin esto un corte tumba el proceso
+  server.listen(PORT, () => {
+    console.log(`BodyFactory Gym → http://localhost:${PORT}   (admin: /admin)   indexación: ${INDEXABLE ? `SÍ (${SITE_URL})` : 'NO (define SITE_URL y ALLOW_INDEXING=true en producción)'}`);
+  });
+}
+
+// Cierre limpio (Railway envía SIGTERM al redeplegar): deja de aceptar conexiones, cierra el pool y sale.
+let closing = false;
+function shutdown(signal) {
+  if (closing) return;
+  closing = true;
+  console.log(`${signal}: cerrando servidor y conexiones PostgreSQL…`);
+  setTimeout(() => process.exit(1), 10_000).unref();
+  server.close(async () => {
+    await pool.end().catch(() => {});
+    process.exit(0);
+  });
+  server.closeIdleConnections();
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+start().catch((e) => {
+  console.error('No se pudo conectar a PostgreSQL; el servidor no arranca.', e);
+  process.exit(1);
 });
