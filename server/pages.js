@@ -66,7 +66,8 @@ function organizationLd(site, origin) {
     url: `${origin}/`, logo: `${origin}/img/logo-512.webp`, image: `${origin}/img/logo-512.webp`,
   };
   if (site.whatsapp) o.telephone = `+${site.whatsapp}`;
-  if (site.address) o.address = { '@type': 'PostalAddress', streetAddress: 'Montoya', addressLocality: 'Managua', addressCountry: 'NI' };
+  if (site.address) o.address = { '@type': 'PostalAddress', streetAddress: '13 Calle Sureste', addressLocality: 'Managua', addressCountry: 'NI' };
+  o.geo = { '@type': 'GeoCoordinates', latitude: 12.139312, longitude: -86.254922 };
   const social = [site.instagram, site.facebook].filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
   if (social.length) o.sameAs = social;
   return o;
