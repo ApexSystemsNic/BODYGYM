@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir, rm } from 'node:fs/promises';
-import { dirname, join, extname, normalize, sep } from 'node:path';
+import { dirname, join, extname, normalize, sep, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, createHash } from 'node:crypto';
 import { gzipSync, brotliCompressSync, constants as zc } from 'node:zlib';
@@ -20,6 +20,10 @@ async function getSharp() {
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = join(root, 'public');
+// Fotos subidas desde el panel (productos y galería). En producción debe apuntar a almacenamiento persistente
+// (p. ej. UPLOAD_DIR=/data/uploads en el volumen de Railway); sin la variable se usa public/ como en local.
+// Se sirven en las mismas URL de siempre (/img/products/…, /images/gallery/…), así la base no cambia.
+const uploadDir = process.env.UPLOAD_DIR ? resolve(process.env.UPLOAD_DIR) : publicDir;
 const PORT = Number(process.env.PORT) || 3000;
 const SECURE_COOKIE = process.env.NODE_ENV === 'production';
 // Detrás de un proxy inverso (Nginx, Caddy…) la IP real del cliente llega en X-Forwarded-For.
@@ -412,10 +416,10 @@ async function adminApi(req, res, path) {
     if (!/^image\/(jpeg|png|webp)$/.test(req.headers['content-type'] || '')) throw new HttpError(415, 'Sube una imagen JPG, PNG o WebP');
     const buf = await readBody(req, 10 * 1024 * 1024);
     const base = `img/products/${m[1]}-${Date.now().toString(36)}`;
-    await mkdir(join(publicDir, 'img', 'products'), { recursive: true });
+    await mkdir(join(uploadDir, 'img', 'products'), { recursive: true });
     try {
       const sharp = await getSharp();
-      for (const w of PRODUCT_SIZES) await (await productWebp(sharp, buf, w)).toFile(join(publicDir, `${base}-${w}.webp`));
+      for (const w of PRODUCT_SIZES) await (await productWebp(sharp, buf, w)).toFile(join(uploadDir, `${base}-${w}.webp`));
     } catch { throw new HttpError(400, 'La imagen no se pudo procesar'); }
     return json(res, 200, { image: base });
   }
@@ -430,7 +434,7 @@ async function adminApi(req, res, path) {
     try { alt = str(decodeURIComponent(req.headers['x-photo-alt'] || ''), 120); } catch { /* texto no válido: se usa el genérico */ }
     // Nombre generado por el servidor: nunca se usa el nombre ni la ruta que envía el navegador.
     const file = `gym-${Date.now().toString(36)}-${randomBytes(4).toString('hex')}`;
-    const dir = join(publicDir, 'images', 'gallery');
+    const dir = join(uploadDir, 'images', 'gallery');
     await mkdir(dir, { recursive: true });
     try {
       const sharp = await getSharp();
@@ -459,7 +463,7 @@ async function adminApi(req, res, path) {
     if (row) {
       await execute('DELETE FROM gallery WHERE id = $1', [row.id]);
       if (/^gym-[a-z0-9]+-[a-f0-9]{8}$/.test(row.file)) {
-        const dir = join(publicDir, 'images', 'gallery');
+        const dir = join(uploadDir, 'images', 'gallery');
         await Promise.all(GALLERY_SIZES.map((w) => rm(join(dir, `${row.file}-${w}.webp`), { force: true }).catch(() => {})));
       }
       return json(res, 200, { ok: true });
@@ -753,10 +757,16 @@ async function serveStatic(req, res, path) {
   try { rel = decodeURIComponent(path); } catch { throw new HttpError(400, 'URL inválida'); }
   const isAdmin = rel === '/admin' || rel.startsWith('/admin/');
   if (rel === '/admin' || rel === '/admin/') rel = '/admin/index.html';
-  const file = normalize(join(publicDir, rel));
+  let file = normalize(join(publicDir, rel));
   if (!file.startsWith(publicDir + sep)) throw new HttpError(403, 'Prohibido');
   let st = null;
   try { st = await stat(file); } catch { /* no existe */ }
+  // Fotos subidas desde el panel: si no están entre los archivos del proyecto, se buscan en UPLOAD_DIR
+  // (solo nombres simples .webp dentro de esas dos carpetas; nunca otras rutas).
+  if ((!st || !st.isFile()) && uploadDir !== publicDir && /^\/(img\/products|images\/gallery)\/[a-z0-9][a-z0-9-]*\.webp$/.test(rel)) {
+    const up = normalize(join(uploadDir, rel));
+    if (up.startsWith(uploadDir + sep)) { try { const s2 = await stat(up); if (s2.isFile()) { file = up; st = s2; } } catch { /* no existe */ } }
+  }
   if (!st || !st.isFile()) {
     // Rutas de página inexistentes: 404 real con página útil (no "200 + no encontrado").
     if (!extname(rel) || rel.endsWith('.html')) return sendHtml(req, res, await renderPage(req, 'notfound', {}), 404);
