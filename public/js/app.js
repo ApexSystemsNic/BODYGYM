@@ -276,7 +276,7 @@ async function sendOrder(btn) {
       lines: cartLines().map(({ l, d }) => ({ name: d.name, flavor: l.flavor, qty: l.qty, subtotal: Math.round(d.unit * l.qty * 100) / 100, detail: '' })),
     };
   }
-  const url = `https://wa.me/${state.site.whatsapp}?text=${encodeURIComponent(waMessage(order, name, notes))}`;
+  const url = `https://wa.me/${state.site.whatsappSales || state.site.whatsapp}?text=${encodeURIComponent(waMessage(order, name, notes))}`;
   if (win) win.location.href = url; else location.href = url;
   state.cart = []; saveCart(); renderCartBadge();
   $('#cartDialog').close();
@@ -434,7 +434,8 @@ function renderAbout() {
     <div class="panel"><h3>${icon('truck')} ${s.delivery}</h3>
       <p class="muted" style="margin:0">Llevamos tu pedido sin costo a cualquier punto de Managua. Para otras zonas, coordinamos por WhatsApp.</p>
       <div class="link-row">
-        <a class="btn wa small" href="https://wa.me/${s.whatsapp}" target="_blank" rel="noopener noreferrer">${icon('whatsapp')} WhatsApp</a>
+        ${s.whatsappSales ? h`<a class="btn wa small" href="https://wa.me/${s.whatsappSales}" target="_blank" rel="noopener noreferrer">${icon('whatsapp')} Ventas y pedidos</a>` : ''}
+        <a class="btn wa small" href="https://wa.me/${s.whatsapp}" target="_blank" rel="noopener noreferrer">${icon('whatsapp')} ${s.whatsappSales ? 'Consultas' : 'WhatsApp'}</a>
         <a class="btn metal small" href="${s.instagram}" target="_blank" rel="noopener noreferrer">${icon('instagram')} ${s.instagramHandle}</a>
         ${/^https:\/\//.test(s.facebook || '') ? h`<a class="btn metal small" href="${s.facebook}" target="_blank" rel="noopener noreferrer" aria-label="Facebook de ${s.name} (se abre en otra pestaña)">${icon('facebook')} Facebook</a>` : ''}</div></div>
     ${(s.transfers || []).length ? h`<div class="panel transfers"><h3>${icon('bank')} Transferencias</h3>
@@ -761,6 +762,7 @@ async function init() {
   if (boot?.catalog) { Object.assign(state, boot.catalog); state.etag = boot.etag || ''; sanitizeCart(); } else await loadCatalog();
   if ($('#grid')) readListUrl();
   if (state.site?.whatsapp && $('#drawerWa')) $('#drawerWa').href = `https://wa.me/${state.site.whatsapp}`;
+  if (state.site?.whatsappSales && $('#drawerWaSales')) $('#drawerWaSales').href = `https://wa.me/${state.site.whatsappSales}`;
   // Si el servidor ya dibujó la página con precio normal, no se repinta: solo se enlazan los eventos.
   const painted = document.body.dataset.ssr === '1' && state.mode === 'retail' && boot?.catalog && !state.q;
   if (painted) { renderCartBadge(); syncModeButtons(); } else { renderTop(); refreshProductPage(); }
