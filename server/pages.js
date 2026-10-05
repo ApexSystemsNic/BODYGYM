@@ -6,7 +6,7 @@
 import {
   h, Safe, esc, card, chipsHtml, productSheet, productUrl, productSlug, productAlt, normalizeCategory, categoryLabel,
   categoryUrl, CATEGORY_ORDER, CATEGORY_SLUG, rangeCountText, paginationHtml, pageSizes, pageRange, usd, ASSET_V, CARD_SIZES,
-  DISCLAIMER, publicText, isRealReview,
+  DISCLAIMER, publicText, isRealReview, BRAND, listTitle, productTitle,
 } from '../public/js/ui.js';
 
 export const MAX_PAGE_SIZE = 8;
@@ -17,8 +17,11 @@ export const safeJson = (s) => s.replace(/</g, BS + 'u003c')
   .replace(new RegExp(String.fromCharCode(0x2029), 'g'), BS + 'u2029');
 const clip = (s, n) => (s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…');
 
-const HOME_TITLE = 'BodyFactory Gym | Suplementos deportivos en Managua';
-const HOME_DESC = 'Catálogo de suplementos deportivos de BodyFactory Gym: proteínas, creatina, pre-entrenos, aminoácidos y más. Precios en USD, pedidos por WhatsApp y delivery gratis en Managua.';
+const HOME_DESC = 'BodyFactory Gym en Managua, Nicaragua: proteínas, creatina, pre-entrenos y más suplementos deportivos. Precios en USD, pedidos por WhatsApp y delivery gratis.';
+// Variantes del nombre con las que también se busca la marca (solo en los datos estructurados).
+const BRAND_ALT = ['Body Factory Gym', 'BodyFactory Gym'];
+// Medidas reales del logo usado como imagen para compartir (public/img/logo-512.webp).
+const LOGO_IMAGE = { path: '/img/logo-512.webp', width: 512, height: 413 };
 const CAT_INTRO = {
   'PROTEÍNAS': 'Proteína de suero, aislados y ganadores de peso para complementar tu alimentación.',
   CREATINA: 'Creatina monohidratada micronizada en distintas presentaciones.',
@@ -37,20 +40,20 @@ export function findProductBySlug(products, slug) {
 export const findProductById = (products, id) => products.find((p) => p.id === id) || null;
 
 // ── cabecera SEO ──
-function seoHead({ title, description, canonical, robots, ogType = 'website', image, jsonld = [] }) {
+function seoHead({ title, description, canonical, robots, ogType = 'website', image, imageSize, jsonld = [] }) {
   const meta = [
     `<title>${esc(title)}</title>`,
     `<meta name="description" content="${attr(description)}">`,
     `<meta name="robots" content="${robots}">`,
     canonical ? `<link rel="canonical" href="${attr(canonical)}">` : '',
-    `<meta property="og:site_name" content="BodyFactory Gym">`,
+    `<meta property="og:site_name" content="${attr(BRAND)}">`,
     `<meta property="og:locale" content="es_NI">`,
     `<meta property="og:type" content="${ogType}">`,
     `<meta property="og:title" content="${attr(title)}">`,
     `<meta property="og:description" content="${attr(description)}">`,
     canonical ? `<meta property="og:url" content="${attr(canonical)}">` : '',
     image ? `<meta property="og:image" content="${attr(image)}">` : '',
-    image ? `<meta property="og:image:width" content="800"><meta property="og:image:height" content="800">` : '',
+    image && imageSize ? `<meta property="og:image:width" content="${imageSize.width}"><meta property="og:image:height" content="${imageSize.height}">` : '',
     `<meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}">`,
     `<meta name="twitter:title" content="${attr(title)}">`,
     `<meta name="twitter:description" content="${attr(description)}">`,
@@ -60,9 +63,10 @@ function seoHead({ title, description, canonical, robots, ogType = 'website', im
   return meta.filter(Boolean).join('\n  ');
 }
 
+const orgId = (origin) => `${origin}/#organization`;
 function organizationLd(site, origin) {
   const o = {
-    '@context': 'https://schema.org', '@type': 'HealthClub', name: site.name || 'BodyFactory Gym',
+    '@type': 'HealthClub', '@id': orgId(origin), name: site.name || BRAND, alternateName: BRAND_ALT,
     url: `${origin}/`, logo: `${origin}/img/logo-512.webp`, image: `${origin}/img/logo-512.webp`,
   };
   if (site.whatsapp) o.telephone = `+${site.whatsapp}`;
@@ -71,6 +75,19 @@ function organizationLd(site, origin) {
   const social = [site.instagram, site.facebook].filter((u) => typeof u === 'string' && /^https:\/\//.test(u));
   if (social.length) o.sameAs = social;
   return o;
+}
+// Inicio: sitio web oficial + entidad principal, enlazados por @id.
+function homeGraphLd(site, origin) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite', '@id': `${origin}/#website`, url: `${origin}/`, name: site.name || BRAND,
+        alternateName: BRAND_ALT, inLanguage: 'es-NI', publisher: { '@id': orgId(origin) },
+      },
+      organizationLd(site, origin),
+    ],
+  };
 }
 const breadcrumbLd = (items) => ({
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -85,7 +102,7 @@ function productLd(p, origin) {
       '@type': 'Offer', url: `${origin}${productUrl(p)}`, priceCurrency: 'USD', price: Number(p.price_retail).toFixed(2),
       availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       itemCondition: 'https://schema.org/NewCondition',
-      seller: { '@type': 'Organization', name: 'BodyFactory Gym' },
+      seller: { '@id': orgId(origin) },
     },
   };
   if (p.brand) o.brand = { '@type': 'Brand', name: p.brand };
@@ -170,15 +187,15 @@ export function buildCatalogPage({ products, reviews, site, origin, cat, page, q
   const canonical = `${origin}${base}${page > 1 ? `?pagina=${page}` : ''}`;
   const catList = isCat ? products.filter((p) => normalizeCategory(p.category) === cat) : products;
   const brands = [...new Set(catList.map((p) => p.brand).filter(Boolean))].slice(0, 4).join(', ');
-  const title = isCat ? `${categoryLabel(cat)}${page > 1 ? ` · página ${page}` : ''} | BodyFactory Gym` : (page > 1 ? `Catálogo · página ${page} | BodyFactory Gym` : HOME_TITLE);
+  const title = listTitle(cat, page);
   const description = isCat
     ? clip(`${categoryLabel(cat)} en BodyFactory Gym, Managua: ${catList.length} productos${brands ? ` de marcas como ${brands}` : ''}. ${CAT_INTRO[cat] || ''} Precios en USD y pedidos por WhatsApp.`, 158)
     : HOME_DESC;
   const robots = indexable && !q ? 'index, follow, max-image-preview:large' : 'noindex, follow';
-  const crumbs = isCat ? [breadcrumbLd([['Inicio', `${origin}/`], [categoryLabel(cat), `${origin}${base}`]])] : [organizationLd(site, origin)];
+  const crumbs = isCat ? [breadcrumbLd([['Inicio', `${origin}/`], [categoryLabel(cat), `${origin}${base}`]])] : [homeGraphLd(site, origin)];
   return {
     totalPages,
-    head: seoHead({ title, description, canonical: q ? `${origin}${base}` : canonical, robots, image: `${origin}/img/logo-512.webp`, jsonld: crumbs }),
+    head: seoHead({ title, description, canonical: q ? `${origin}${base}` : canonical, robots, image: `${origin}${LOGO_IMAGE.path}`, imageSize: LOGO_IMAGE, jsonld: crumbs }),
     main: html.s,
     first: catList[(pageRange(pageSizes(catList.length, MAX_PAGE_SIZE), page)).start],
   };
@@ -193,7 +210,7 @@ export function buildProductPage({ p, products, reviews, site, origin, indexable
   const tail = `${usd(p.price_retail)} en BodyFactory Gym, Managua.`;
   const body = desc || `${categoryLabel(cat)} con pedido por WhatsApp.`;
   const description = `${lead} ${tail} ${body}`.length <= 158 ? `${lead} ${tail} ${body}` : clip(`${lead} ${body}`, 158);
-  const title = `${p.name}${p.brand && !p.name.toLowerCase().includes(p.brand.toLowerCase()) ? ` · ${p.brand}` : ''} | BodyFactory Gym`;
+  const title = productTitle(p);
   const main = h`<div class="wrap pd-page">
       <nav class="crumbs" aria-label="Ruta de navegación"><a href="/">Inicio</a><span aria-hidden="true">›</span><a href="${categoryUrl(cat)}">${categoryLabel(cat)}</a><span aria-hidden="true">›</span><span aria-current="page">${p.name}</span></nav>
       <article class="pd-article" id="productPage" data-id="${p.id}">${productSheet(p, { mode: 'retail', reviews: reviews.filter(isRealReview), wa: site.whatsapp, page: true })}</article>
@@ -205,7 +222,7 @@ export function buildProductPage({ p, products, reviews, site, origin, indexable
     </div>`;
   const jsonld = [productLd(p, origin), breadcrumbLd([['Inicio', `${origin}/`], [categoryLabel(cat), `${origin}${categoryUrl(cat)}`], [p.name, url]])];
   return {
-    head: seoHead({ title, description, canonical: url, robots: indexable ? 'index, follow, max-image-preview:large' : 'noindex, follow', ogType: 'product', image: p.image ? `${origin}/${p.image}-800.webp?v=${ASSET_V}` : `${origin}/img/logo-512.webp`, jsonld }),
+    head: seoHead({ title, description, canonical: url, robots: indexable ? 'index, follow, max-image-preview:large' : 'noindex, follow', ogType: 'product', image: p.image ? `${origin}/${p.image}-800.webp?v=${ASSET_V}` : `${origin}${LOGO_IMAGE.path}`, imageSize: p.image ? { width: 800, height: 800 } : LOGO_IMAGE, jsonld }),
     main: main.s,
   };
 }

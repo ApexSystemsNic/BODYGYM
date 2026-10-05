@@ -229,6 +229,14 @@ export const CATEGORY_SLUG = Object.fromEntries(CATEGORY_ORDER.map((c) => [c, sl
 export const categoryFromSlug = (slug) => CATEGORY_ORDER.find((c) => CATEGORY_SLUG[c] === slug) || null;
 export const categoryUrl = (c) => (c === 'Todas' ? '/' : `/categoria/${CATEGORY_SLUG[c]}`);
 export const categoryLabel = (c) => c === 'Todas' ? 'Todas' : (CATEGORY_LABEL[c] || c);
+
+// Títulos de página: una sola fuente para el servidor (server/pages.js) y el navegador (document.title).
+export const BRAND = 'BodyFactory Gym';
+export const HOME_TITLE = `${BRAND} | Gimnasio y suplementos en Managua`;
+export const listTitle = (cat, page = 1) => (cat !== 'Todas'
+  ? `${categoryLabel(cat)}${page > 1 ? ` · página ${page}` : ''} | ${BRAND}`
+  : (page > 1 ? `Catálogo · página ${page} | ${BRAND}` : HOME_TITLE));
+export const productTitle = (p) => `${p.name}${p.brand && !p.name.toLowerCase().includes(p.brand.toLowerCase()) ? ` · ${p.brand}` : ''} | ${BRAND}`;
 const CATEGORY_MAP = {
   'proteínas': 'PROTEÍNAS',
   'proteína whey': 'PROTEÍNAS',

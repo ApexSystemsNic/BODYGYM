@@ -1,7 +1,7 @@
 // Catálogo BodyFactory Gym — frontend sin dependencias.
 // Toda cadena que viene de datos pasa por h`` (escapa HTML) para evitar inyección.
 // Las plantillas viven en ui.js: el servidor las usa para pintar las páginas en el HTML.
-import { Safe, h, icon, stars, usd, img, placeholder, DISCLAIMER, stockInfo, known, hasServings, isRealReview, priceOf as priceIn, perServing as perServingIn, ratingOf as ratingIn, card as cardTpl, chipsHtml, productSheet, productUrl, productSlug, normalizeCategory, categoryLabel, categoryUrl, categoryFromSlug, CATEGORY_ORDER, rangeCountText, paginationHtml, pageSizes, pageRange, ASSET_V } from './ui.js?v=__BUILD__';
+import { Safe, h, icon, stars, usd, img, placeholder, DISCLAIMER, stockInfo, known, hasServings, isRealReview, priceOf as priceIn, perServing as perServingIn, ratingOf as ratingIn, card as cardTpl, chipsHtml, productSheet, productUrl, productSlug, normalizeCategory, categoryLabel, categoryUrl, categoryFromSlug, CATEGORY_ORDER, rangeCountText, paginationHtml, pageSizes, pageRange, ASSET_V, listTitle, productTitle } from './ui.js?v=__BUILD__';
 
 const MAX_PAGE_SIZE = 8; // reparto equilibrado automático, ver pageSizes() en ui.js
 
@@ -142,7 +142,7 @@ function syncListUrl(push) {
   const url = listHref();
   listUrl = url;
   if (url !== location.pathname + location.search) history[push ? 'pushState' : 'replaceState']({ list: true }, '', url);
-  document.title = state.cat === 'Todas' ? 'BodyFactory Gym | Suplementos en Managua' : `${categoryLabel(state.cat)} | BodyFactory Gym`;
+  document.title = listTitle(state.cat, state.page);
 }
 function readListUrl() {
   const m = location.pathname.match(/^\/categoria\/([a-z0-9-]+)\/?$/);
@@ -168,7 +168,7 @@ function openProduct(id, push = true) {
   if (!dlg.open) dlg.showModal();
   dlg.querySelector('.sheet-body').scrollTop = 0;
   if (push && location.pathname !== productUrl(p)) { history.pushState({ product: id }, '', productUrl(p)); dlg.dataset.pushed = '1'; }
-  document.title = `${p.name} | BodyFactory Gym`;
+  document.title = productTitle(p);
 }
 const refreshOpenDialog = () => {
   const d = $('#productDialog');
